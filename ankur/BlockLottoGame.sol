@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/drafts/Counters.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/drafts/Counters.sol"
 
 contract BlockLottoGame{
     using Counters for Counters.Counter;
@@ -26,7 +26,7 @@ contract BlockLottoGame{
     mapping(uint => Ticket) public tickets;
     
     event ticketBought (address buyer, uint num1, uint num2, uint num3, uint num4, uint num5, uint num6);
-    event winningNumbers(uint num1, uint num2, uint num3, uint num4, uint num5, uint num6);
+    event winningNumbers(uint num1, uint num2, uint num3, uint num4, uint num5, uint num6)
     event winningTicket(address buyer, uint payout);
     
     constructor(
@@ -62,15 +62,7 @@ contract BlockLottoGame{
         emit ticketBought(msg.sender, num1, num2, num3, num4, num5, num6);
     }
     
-    function getWinningNumbers() private view returns (uint, uint, uint, uint, uint, uint) {
-        // need to make sure the numbers are independent
-        num1 = ( uint8(uint256(keccak256(block.timestamp, block.difficulty)) % maxBallNum  ) + 1;
-        num2 = ( uint8(uint256(keccak256(block.timestamp+1, block.difficulty+1)) % maxBallNum ) + 1;
-        num3 = ( uint8(uint256(keccak256(block.timestamp+2, block.difficulty+2)) % maxBallNum ) + 1;
-        num4 = ( uint8(uint256(keccak256(block.timestamp+3, block.difficulty+3)) % maxBallNum ) + 1;
-        num5 = ( uint8(uint256(keccak256(block.timestamp+4, block.difficulty+4)) % maxBallNum ) + 1;
-        num6 = ( uint8(uint256(keccak256(block.timestamp+5, block.difficulty+5)) % maxBallNum ) + 1;
-    }
+    //@TODO insert function to pick random winning nums
     
     function finalize()public openStatus{
         // pick winning nums, find winning tickets, divide .8 pot among winners
@@ -93,7 +85,7 @@ contract BlockLottoGame{
             }
         }
         if (winnerIds.current() > 0) {
-            winningAmount = lottoPot * .8 / winnerIds.current();
+            winningAmount = lottoPot * .8 / winners.current();
         }
         
         for (uint i = 1; i <= winnerIds.current(); i++) {
