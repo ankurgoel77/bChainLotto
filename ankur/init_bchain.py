@@ -16,8 +16,7 @@ with open(csvpath, "r") as csvfile:
     main_private_key = main_row[3]
 
     for row in csvreader:
-        current_row = next(csvreader)
-        current_address = current_row[1]
+        current_address = row[1]
         nonce = web3.eth.getTransactionCount(main_address)
         tx = {
             "nonce": nonce,
