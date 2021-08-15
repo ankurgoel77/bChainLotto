@@ -11,6 +11,7 @@ contract BlockLottoGame{
     // closingTime
     bool isOpen;
     uint lottoPot;
+    uint maxBallNum;
     
     
     struct Ticket {
@@ -81,8 +82,9 @@ contract BlockLottoGame{
         uint winningAmount = 0;
         mapping (uint ==> Ticket) winners;
         // require for closingTime;
-        //@TODO call function to pick random winning nums
-        // emit winningNumbers(num1, num2, num3, num4, num5, num6);
+        
+        (num1, num2, num3, num4, num5, num6) =  getWinningNumbers();
+        emit winningNumbers(num1, num2, num3, num4, num5, num6);
         
         
         for (uint i=1; i<= ticketids; i++) {
