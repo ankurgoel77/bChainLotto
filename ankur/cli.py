@@ -8,6 +8,7 @@ print(address)
 
 print(f"balance of that address is {web3.fromWei(web3.eth.get_balance(address),'ether')}")
 
+
 choice = input("Do you want to pick 6?  Y or N : ")
 if choice == "Y":
     pick6(sssss)
