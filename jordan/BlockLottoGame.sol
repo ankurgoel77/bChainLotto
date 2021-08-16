@@ -1,37 +1,19 @@
 pragma solidity ^0.5.0;
 
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/release-v2.5.0/contracts/drafts/Counters.sol";
-
 contract BlockLottoGame{
-    using Counters for Counters.Counter;
-    Counters.Counter ticketids;
     address starter;
     address payable beneficiary; // charity gets all if nobody wins :-) 
-    uint8 maxBallNum;
+    uint8 public maxBallNum;
     
     // closingTime
     bool isOpen;
     uint public lottoPot;
     
-    
-    struct Ticket {
-        address payable buyer;
-        uint8 num1;
-        uint8 num2;
-        uint8 num3;
-        uint8 num4;
-        uint8 num5;
-        uint8 num6;
-    
-    }
-    mapping(uint => Ticket) public tickets;
-
-    mapping (uint => Ticket)  winners;
-    Counters.Counter winnerIds;
+    mapping(uint64 => address payable[]) public tickets;
     
     event ticketBought (address buyer, uint8 num1, uint8 num2, uint8 num3, uint8 num4, uint8 num5, uint8 num6);
     event winningNumbers(uint8 num1, uint8 num2, uint8 num3, uint8 num4, uint8 num5, uint8 num6);
-    event winningTicket(address payable buyer, uint payout);
+    event winningBuyer(address payable buyer, uint payout);
     
     constructor(
         address payable _beneficiary,
@@ -50,6 +32,10 @@ contract BlockLottoGame{
         _;
     }
     
+    function encodeTicket(uint8 num1, uint8 num2, uint8 num3, uint8 num4, uint8 num5, uint8 num6) internal pure returns (uint64) {
+        return (uint64(num1) << 0) + (uint64(num2) << 1) + (uint64(num3) << 2) + (uint64(num4) << 3) + (uint64(num5) << 4) + (uint64(num6) << 5);
+    }
+    
     function buyTicket(uint8 num1, uint8 num2, uint8 num3, uint8 num4, uint8 num5, uint8 num6) public payable openStatus{
         // buy 1 ETH ticket (return excess), store & emit address+ nums, & add 1ETH to pot  
         require (msg.value >= 1 ether, "SEND MORE");
@@ -58,10 +44,10 @@ contract BlockLottoGame{
             msg.sender.transfer(msg.value - 1 ether);
         }
         lottoPot += 1 ether;
-        Ticket memory ticket = Ticket(msg.sender, num1, num2, num3, num4, num5, num6);
-        ticketids.increment();
-        tickets[ticketids.current()] = ticket;
         
+        uint64 ticket = encodeTicket(num1, num2, num3, num4, num5, num6);
+        tickets[ticket].push(msg.sender);
+
         //@TODO: verify all nums are 1 - maxBallNum
         emit ticketBought(msg.sender, num1, num2, num3, num4, num5, num6);
     }
@@ -144,29 +130,27 @@ contract BlockLottoGame{
         isOpen = false;
         
         uint winningAmount = 0;
+        uint64 winningTicket;
         // require for closingTime;
 
         (num1, num2, num3, num4, num5, num6) =  getWinningNumbers();
         emit winningNumbers(num1, num2, num3, num4, num5, num6);
         
+        winningTicket = encodeTicket(num1, num2, num3, num4, num5, num6);
         
-        for (uint i=1; i<= ticketids.current(); i++) {
-            Ticket memory currentTicket = tickets[i];
-            if (currentTicket.num1 == num1 && currentTicket.num2 == num2 && currentTicket.num3 == num3 && currentTicket.num4 == num4 && currentTicket.num5 == num5 && currentTicket.num6 == num6 ) {
-                winnerIds.increment();
-                winners[winnerIds.current()] = currentTicket;
-            }
-        }
-        if (winnerIds.current() > 0) {
-            winningAmount = uint(lottoPot * 4 / 5 / winnerIds.current());
+        address payable[] memory winners = tickets[winningTicket];
+        
+        if (winners.length > 0) {
+            winningAmount = uint(lottoPot * 4 / 5 / winners.length);
         }
         
-        for (uint i = 1; i <= winnerIds.current(); i++) {
-            winners[i].buyer.transfer(winningAmount);
-            emit winningTicket(winners[i].buyer, winningAmount);
+        
+        for (uint i = 0; i < winners.length; i++) {
+            winners[i].transfer(winningAmount);
+            emit winningBuyer(winners[i], winningAmount);
         }
         
-        lottoPot -= winningAmount; // takes care of remainders
+        lottoPot -= (winningAmount * winners.length); // takes care of remainders
         beneficiary.transfer(lottoPot);
         
     }
