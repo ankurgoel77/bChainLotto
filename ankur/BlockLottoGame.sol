@@ -79,32 +79,32 @@ contract BlockLottoGame{
             lottoBag[i] = i+1;
         }
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty))) % bagLength  );
         numbers[0] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+1, block.difficulty+1))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+1, block.difficulty+1))) % bagLength  );
         numbers[1] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+2,block.difficulty+2))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+2,block.difficulty+2))) % bagLength  );
         numbers[2] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+3,block.difficulty+3))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+3,block.difficulty+3))) % bagLength  );
         numbers[3] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+4, block.difficulty+4))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+4, block.difficulty+4))) % bagLength  );
         numbers[4] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+5, block.difficulty+5))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+5, block.difficulty+5))) % bagLength  );
         numbers[5] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;

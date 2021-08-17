@@ -5,9 +5,9 @@ contract BlockLottoGame{
     address payable beneficiary; // charity gets all if nobody wins :-) 
     uint8 public maxBallNum;
     
-    // closingTime
     bool isOpen;
     uint public lottoPot;
+    uint64 winningTicket;
     
     mapping(uint64 => address payable[]) public tickets;
     
@@ -18,14 +18,12 @@ contract BlockLottoGame{
     constructor(
         address payable _beneficiary,
         uint8 _maxBallNum
-        // uint _closingTime 
         ) public {
             
         starter = msg.sender;
         beneficiary = _beneficiary; 
         maxBallNum = _maxBallNum;
         isOpen = true;
-        // closingTime = _closingTime
     }
     modifier openStatus{
         require (isOpen, "Lotto already closed");
@@ -33,7 +31,7 @@ contract BlockLottoGame{
     }
     
     function encodeTicket(uint8 num1, uint8 num2, uint8 num3, uint8 num4, uint8 num5, uint8 num6) internal pure returns (uint64) {
-        return (uint64(num1) << 0) + (uint64(num2) << 1) + (uint64(num3) << 2) + (uint64(num4) << 3) + (uint64(num5) << 4) + (uint64(num6) << 5);
+        return (uint64(num1) << 0) + (uint64(num2) << 8) + (uint64(num3) << 16) + (uint64(num4) << 24) + (uint64(num5) << 32) + (uint64(num6) << 40);
     }
     
     function buyTicket(uint8 num1, uint8 num2, uint8 num3, uint8 num4, uint8 num5, uint8 num6) public payable openStatus{
@@ -67,7 +65,7 @@ contract BlockLottoGame{
         }
     }
     
-    function getWinningNumbers() internal returns (uint8, uint8, uint8, uint8, uint8, uint8) {
+    function generateWinningNumbers() internal returns (uint8, uint8, uint8, uint8, uint8, uint8) {
         // This function generate 6 unique random numbers between 1 and maxBallNum inclusive
         // A "bag" of numbers is initialized in a array 
         // A random number will be chosen from this array and stored as a winning number, then the last number in the array is swapped into that storage position
@@ -81,32 +79,32 @@ contract BlockLottoGame{
             lottoBag[i] = i+1;
         }
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp, block.difficulty))) % bagLength  );
         numbers[0] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+1, block.difficulty+1))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+1, block.difficulty+1))) % bagLength  );
         numbers[1] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+2,block.difficulty+2))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+2,block.difficulty+2))) % bagLength  );
         numbers[2] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+3,block.difficulty+3))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+3,block.difficulty+3))) % bagLength  );
         numbers[3] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+4, block.difficulty+4))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+4, block.difficulty+4))) % bagLength  );
         numbers[4] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
         
-        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+5, block.difficulty+5))) % maxBallNum  );
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+5, block.difficulty+5))) % bagLength  );
         numbers[5] = lottoBag[random];
         lottoBag[random] = lottoBag[bagLength-1];
         bagLength -= 1;
@@ -130,10 +128,8 @@ contract BlockLottoGame{
         isOpen = false;
         
         uint winningAmount = 0;
-        uint64 winningTicket;
-        // require for closingTime;
 
-        (num1, num2, num3, num4, num5, num6) =  getWinningNumbers();
+        (num1, num2, num3, num4, num5, num6) =  generateWinningNumbers();
         emit winningNumbers(num1, num2, num3, num4, num5, num6);
         
         winningTicket = encodeTicket(num1, num2, num3, num4, num5, num6);
@@ -155,11 +151,16 @@ contract BlockLottoGame{
         
     }
     
-    //@TODO: <maybe> rollover lotto (sees previous pot >>>>to potential next contract) 
-    
-    
-    // uint256 public lotteryId;
-    // function startLotto(uint256 duration){}
+    function getWinningNumbers() public view returns (uint8, uint8, uint8, uint8, uint8, uint8) {
+        require (!isOpen, "lottery has not completed yet");
+        return (uint8((winningTicket & 255) >> 0),
+                uint8((winningTicket & 65280) >> 8),
+                uint8((winningTicket & 16711680) >> 16),
+                uint8((winningTicket & 4278190080) >> 24),
+                uint8((winningTicket & 1095216660480) >> 32),
+                uint8((winningTicket & 280375465082880) >> 40) 
+                );
+    }
     
     
 }
