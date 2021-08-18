@@ -11,27 +11,31 @@ contract BlackJack_1player {
     //order from https://en.wikipedia.org/wiki/Playing_cards_in_Unicode
     //see rules at https://bicyclecards.com/how-to-play/blackjack/
     
+    // insurance is only offered if player does not already have blackjack
+    
     // This contract requires the dealer to cover 1.5X the bet of the player
     // Dealer transfers 1.5X the bet in the constructor, and then player has to send bet by calling ante
 
     
     address payable player;
     address payable dealer;
+    
     uint public bet;
-    uint pot;
     uint8[] playerHand;
     uint8 playerHandValue;
     uint8[] dealerHand;
     uint8 dealerHandValue;
+
     uint8[52] deck;
     uint8 deckLength;
     
     bool public isFinished;
     bool public isStarted;
     
-    // constructor will start game.  msg.sender is the dealer.  
-    // constructor will deal 2 cards to player, and deal 2 cards to house
+    // constructor will start the contract.  msg.sender is the dealer.  
+    // dealer puts ether in contract first and awaits ante for player to send ether
     // player must call getPlayerHand and getDealerHand to see results of deal
+    // player must call ante to send bet and start the game
     constructor (address payable _player, uint _bet) public payable {
         require(_bet > 0,"You must bet some ether to play this game.");
         require(msg.value >= (5 * _bet/ 2), "dealer must cover at least 2.5X the player bet in case of insurance win and push");
@@ -39,13 +43,9 @@ contract BlackJack_1player {
         dealer = msg.sender;
         player = _player;
         bet = _bet;
-        pot = msg.value;
         
         isFinished = false;
         isStarted = false;
-
-
-        
     }
     
     function getHandValue(uint8[] storage hand) internal view returns (uint8) {
@@ -101,27 +101,32 @@ contract BlackJack_1player {
         }
     }
     
+    // player can always call this function to get total value of hand
     function getPlayerHandValue() public view returns (uint8) {
         return getHandValue(playerHand);
     }
     
+    // player cannot call this function. Instead, call getDealerHand and calculate client side
     function getDealerHandValue() internal returns (uint8) {
         return getHandValue(dealerHand);
     }
     
     // Call this function anytime to get the contract's balance, and the pot balance.  These 2 numbers should always be equal!
-    function getBalance() public view returns (uint, uint) {
-        return (address(this).balance, pot);
+    function getBalance() public view returns (uint) {
+        return (address(this).balance);
     }
     
     function ante() public payable {
         require (msg.sender == player, "only player can ante up");
         require (msg.value >= bet, "must send at least bet amount to ante.  excess will be returned");
+        require (!isFinished, "cannot ante if game is finished");
+        require (!isStarted, "cannot ante if game already started");
         
+        
+        // send back excess ether
         if (msg.value > bet) {
             msg.sender.transfer(msg.value - bet);
         }
-        pot += bet;
         
         // initialize the deck, gas payed by player
         for (uint8 i = 0; i < 52; i++) {
@@ -133,6 +138,18 @@ contract BlackJack_1player {
         isStarted = true;
         playerHandValue = getPlayerHandValue();
         dealerHandValue = getDealerHandValue();
+        
+        if ((playerHandValue == 21) && (dealerHandValue < 21)) {  //blackjack
+            player.transfer(bet * 3 /2 );
+            dealer.transfer(address(this).balance);
+            isFinished = true;
+        }
+        
+        if ((playerHandValue == 21) && (dealerHandValue == 21)) {
+            player.transfer(bet);
+            dealer.transfer(address(this).balance);
+            isFinished = true;
+        }
     }
     
     //increment the counter every time you deal within a single transaction to make sure keccak256 hashes a different number
@@ -249,10 +266,8 @@ contract BlackJack_1player {
         require(!isFinished, "cannot call endGame if game has already finished");
         if (isStarted) {
             player.transfer(bet);
-            pot -= bet;
         }
         
-        pot -= address(this).balance;
         dealer.transfer(address(this).balance);
         
         isFinished = true;
