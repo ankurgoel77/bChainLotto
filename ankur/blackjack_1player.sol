@@ -17,10 +17,12 @@ contract BlackJack_1player {
     
     address payable player;
     address payable dealer;
-    uint bet;
+    uint public bet;
     uint pot;
     uint8[] playerHand;
+    uint8 playerHandValue;
     uint8[] dealerHand;
+    uint8 dealerHandValue;
     uint8[52] deck;
     uint8 deckLength;
     
@@ -30,7 +32,7 @@ contract BlackJack_1player {
     // constructor will start game.  msg.sender is the dealer.  
     // constructor will deal 2 cards to player, and deal 2 cards to house
     // player must call getPlayerHand and getDealerHand to see results of deal
-    constructor (uint _bet, address payable _player) public payable {
+    constructor (address payable _player, uint _bet) public payable {
         require(_bet > 0,"You must bet some ether to play this game.");
         require(msg.value >= (5 * _bet/ 2), "dealer must cover at least 2.5X the player bet in case of insurance win and push");
 
@@ -44,6 +46,67 @@ contract BlackJack_1player {
 
 
         
+    }
+    
+    function getHandValue(uint8[] storage hand) internal view returns (uint8) {
+        // aces suck:  
+        //   If a hand has 1 ace, add 1 or 11
+        //   If a hand has 2 aces, add 2 or 12, anything else busts
+        //   If a hand has 3 aces, add 3 or 13, anything else busts
+        //   If a hand has 4 aces, add 4 or 14, anything else busts
+        
+        uint8 baseValue = 0;  // value without aces
+        uint8 cardValue = 0;
+        uint8 acesCount = 0;
+        
+        for (uint8 i = 0; i < hand.length; i++) {
+            cardValue = hand[i] % 13;
+            if (cardValue > 0) {   //not an aces
+                if (cardValue < 10) {
+                    baseValue += cardValue + 1;
+                } else {
+                    baseValue += 10;  // Jack, Queen, or King
+                }
+            } else {
+                acesCount += 1;
+            }
+        }
+        
+        if (acesCount == 1) {
+            if (baseValue + 11 <= 21) {
+                return baseValue + 11;
+            } else {
+                return baseValue + 1;
+            }
+        } else if (acesCount == 2) {
+            if (baseValue + 12 <= 21) {
+                return baseValue + 12;
+            } else {
+                return baseValue + 2;
+            }
+        } else if (acesCount == 3) {
+            if (baseValue + 13 <= 21) {
+                return baseValue + 13;
+            } else {
+                return baseValue + 3;
+            }
+        } else if (acesCount == 4) {
+            if (baseValue + 14 <= 21) {
+                return baseValue + 14;
+            } else {
+                return baseValue + 4;
+            }            
+        } else {
+            return baseValue;
+        }
+    }
+    
+    function getPlayerHandValue() public view returns (uint8) {
+        return getHandValue(playerHand);
+    }
+    
+    function getDealerHandValue() internal returns (uint8) {
+        return getHandValue(dealerHand);
     }
     
     // Call this function anytime to get the contract's balance, and the pot balance.  These 2 numbers should always be equal!
@@ -68,6 +131,19 @@ contract BlackJack_1player {
         
         deal();
         isStarted = true;
+        playerHandValue = getPlayerHandValue();
+        dealerHandValue = getDealerHandValue();
+    }
+    
+    //increment the counter every time you deal within a single transaction to make sure keccak256 hashes a different number
+    function dealSingleCard(uint8 counter) internal returns (uint8) {
+        uint8 random;
+        uint8 card;
+        random = uint8(uint256(keccak256(abi.encodePacked(block.timestamp+counter, block.difficulty+counter))) % deckLength  );
+        card = random;
+        deck[random] = deck[deckLength-1];
+        deckLength -= 1;
+        return card;
     }
     
     function deal() internal {
@@ -98,7 +174,7 @@ contract BlackJack_1player {
         return playerHand;
     }
     
-    function getHouseHand() public view returns (uint8[] memory) {
+    function getDealerHand() public view returns (uint8[] memory) {
         if (isFinished) {
             return dealerHand;
         } else {
@@ -108,11 +184,44 @@ contract BlackJack_1player {
         }
     }
     
-    function stand() public {}
+    function stand() public {
+        require(isStarted, "cannot call Stand without starting game");
+        require(!isFinished, "cannot call Stand when game has already ended");
+        uint8 counter;
+        while (dealerHandValue < 17) {
+            counter += 1;
+            dealerHand.push(dealSingleCard(counter));
+            dealerHandValue = getDealerHandValue();
+        }
+        
+        if ((dealerHandValue > 21) || (dealerHandValue < playerHandValue)) {
+            player.transfer(bet * 2);
+            dealer.transfer(address(this).balance);
+        } else if (dealerHandValue == playerHandValue) {
+            player.transfer(bet);
+            dealer.transfer(address(this).balance);
+        } else if (dealerHandValue > playerHandValue) {
+            // player gets nothing
+        }
+        isFinished = true;
+        dealer.transfer(address(this).balance);  // any remaining money in the contract goes back to the dealer
+    }
     
-    function hit() public {}
+    function hit() public {
+        require(isStarted, "cannot call hit without starting game");
+        require(!isFinished, "cannot call hit when game has already ended");
+        playerHand.push(dealSingleCard(0));
+        playerHandValue = getPlayerHandValue();
+        
+        if (playerHandValue > 21) {
+            isFinished = true;
+            dealer.transfer(address(this).balance);
+        }
+    }
     
-    function doubleDown() public {}
+    function doubleDown() public payable {
+        require(playerHand.length == 2, "can only double down when showing 2 cards");
+    }
     
     //function split() public returns () {}
     
@@ -121,13 +230,15 @@ contract BlackJack_1player {
     // if player also has blackjack, dealer get 1X bet and player gets 1X bet (push)
     // if player does not have blackjack, he automatically loses.
     // if dealer does not have blackjack, insurance goes to dealer and game continues
-    function buyInsurance(uint insuranceAmount) public payable returns (bool) {
+    function buyInsurance() public payable returns (bool) {
+        require(isStarted, "cannot buy insurance until you have ante'd up");
+        require(!isFinished, "cannot buy insurance after game is finished.");
         require(playerHand.length == 2, "cannot pay insurance once you have already hit");
         require(dealerHand[0] % 13 == 0, "insurance only applies when dealer is showing an Ace");
-        require(insuranceAmount <= bet, "can only offer insurance up to original bet amount");
+        require(msg.value <= (bet / 2), "can only offer insurance up to 50% original bet amount");
         
         if (dealerHand[1] % 13 >= 9) {  //dealer has blackjack
-            player.transfer(insuranceAmount);
+            player.transfer(msg.value * 2);
         } else {
             dealer.transfer(msg.value);
         }
@@ -145,6 +256,11 @@ contract BlackJack_1player {
         dealer.transfer(address(this).balance);
         
         isFinished = true;
+    }
+    
+    //Fallback function
+    function () external payable {
+        require(false, "This contract does not accept direct transfers.");
     }
     
     
