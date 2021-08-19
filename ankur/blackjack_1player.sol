@@ -195,6 +195,9 @@ contract BlackJack_1player {
         if (isFinished) {
             return dealerHand;
         } else {
+            if (dealerHand.length == 0) {  // if you call getDealerHand before ante, I needed to return an empty array
+                return dealerHand;
+            }
             uint8[] memory hand = new uint8[](1);  // had to fight compiler to get this to work.
             hand[0]=dealerHand[0];
             return hand;
@@ -256,8 +259,11 @@ contract BlackJack_1player {
         
         if (dealerHand[1] % 13 >= 9) {  //dealer has blackjack
             player.transfer(msg.value * 2);
+            isFinished = true;
+            return true;
         } else {
             dealer.transfer(msg.value);
+            return false;
         }
     }
     
