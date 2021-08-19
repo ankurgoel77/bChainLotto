@@ -241,6 +241,10 @@ contract BlackJack_1player {
     
     function doubleDown() public payable {
         require(playerHand.length == 2, "can only double down when showing 2 cards");
+        playerHand.push(dealSingleCard(0));
+        playerHandValue = getPlayerHandValue();
+        
+        stand();
     }
     
     //function split() public returns () {}
