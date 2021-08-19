@@ -244,7 +244,13 @@ contract BlackJack_1player {
         playerHand.push(dealSingleCard(0));
         playerHandValue = getPlayerHandValue();
         
-        stand();
+        if (playerHandValue > 21) {
+            isFinished = true;
+            dealer.transfer(address(this).balance);
+        } else {
+        
+            stand();
+        }
     }
     
     //function split() public returns () {}
