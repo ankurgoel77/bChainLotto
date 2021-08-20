@@ -1,5 +1,7 @@
+
+
 # User
-"""
+
 will use smart contract calls and generated functions to interact
 
 from contract: maxBallNum, getWinningNum, lottoPot
@@ -13,12 +15,13 @@ functions:
 
     check_pot: calls lottoPot fx
 
-"""
+
+
 
 
 # Creator
 
-"""
+
 
 initiate the contract with all required parameters: 
     
@@ -26,4 +29,3 @@ initiate the contract with all required parameters:
     init contract
         set maxballnum
 
-"""
