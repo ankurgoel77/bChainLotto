@@ -1,0 +1,6 @@
+account #	type		balances over time
+
+1		starter		90.45 ==> loss of 0.03 after 2 games
+2		beneficiary	101.69	==> 101.89 after first finalize ==> 102.69 after 2nd finalize
+3		winner 		99.94  ==> 98.94 after buying ticket ==> 99.74 after 1st finalize ==> 98.74 after 1 ticket ==> 101.94 after 2nd finalize
+4		loser		100 ==> 97.00 after 3 tickets on 2nd game ==> 97.00 after 2nd finalize

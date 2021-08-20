@@ -3,10 +3,10 @@ import json
 import sys
 import os
 
-from web3.providers import base
+#from web3.providers import base
 
 #initialize abi and bytecode
-print(os.getcwd())
+#print(os.getcwd())
 f = open("./ankur/blackjack_abi.json")
 abi = json.load(f)
 f.close()
@@ -32,24 +32,24 @@ def num_to_str(number):
     div = number // 13
 
     if mod == 0:
-        card_str += "A"
+        card_str += "Ace"
     elif mod == 10:
-        card_str += "J"
+        card_str += "Jack"
     elif mod == 11:
-        card_str += "Q"
+        card_str += "Queen"
     elif mod == 12:
-        card_str += "K"
+        card_str += "King"
     else:
         card_str += f"{mod+1}"
 
     if div == 0:
-        card_str += " Spades"
+        card_str += " of Spades"
     elif div == 1:
-        card_str += " Hearts"
+        card_str += " of Hearts"
     elif div == 2:
-        card_str += " Diamonds"
+        card_str += " of Diamonds"
     elif div == 3:
-        card_str += " Clubs"
+        card_str += " of Clubs"
 
     return card_str
 
@@ -100,6 +100,8 @@ def nums_to_value(hand):
 
 def main() :
     print("****************Welcome to Blockchain Blackjack*************")
+    player_account = input("Please enter your address for your wallet: ")
+    player_private_key = input("Please enter your private key for transaction signing: ")
     bet = input("How much Wei would you like to bet?  ")
     bet = int(bet)
     print("** Instantiating game on the blockchain **")
