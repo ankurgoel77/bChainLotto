@@ -32,7 +32,8 @@ creator_account = Account.from_key(pvtkey)
 beneficiary_key = (input("type in a private key for the beneficiary: "))
 beneficiary = Account.from_key(beneficiary_key).address
 
-web3.eth.default_account = creator_account
+web3.eth.default_account = creator_account.address
+
 def init_game():
     lotto_contract = web3.eth.contract(abi=abi, bytecode=bytecode)
 
