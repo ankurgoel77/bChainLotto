@@ -5,7 +5,7 @@ contract BlockLottoGame{
     address payable beneficiary; // charity gets all if nobody wins :-) 
     uint8 public maxBallNum;
     
-    bool isOpen;
+    bool public isOpen;
     uint public lottoPot;
     uint64 winningTicket;
     
