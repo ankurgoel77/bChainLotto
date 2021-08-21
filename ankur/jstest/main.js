@@ -81,7 +81,15 @@ function ante() {
 
 function hit() {
     let player = document.querySelector("#acc_address").value;
-    let 
+    currentContract.methods.hit().send({
+        from : player,
+        gasLimit : 6721975,
+    }).then(function(receipt) {
+        currentContract.methods.getPlayerHand().call({from: player}).then(function(value) {
+            document.querySelector('#player_string_hand').innerHTML = hand_to_str(value);
+            document.querySelector('#player_card_hand').innerHTML = hand_to_unicode(value);
+        })
+    });
 }
 
 function num_to_unicode(number) {
@@ -89,6 +97,11 @@ function num_to_unicode(number) {
     let mod = number % 13;
     let div = Math.trunc(number/13);
     let black = false;
+
+    // fix for knight card between Jack and Queen
+    if (mod >= 11) {
+        mod += 1;
+    }
     
     switch(div) {
         case 0:
@@ -170,12 +183,12 @@ function hand_to_str(hand) {
     return value.join(', ');
 }
 
-function nums_to_value(hand){
+function hand_to_value(hand){
     let baseValue = 0
     let cardValue = 0
     let acesCount = 0
 
-    for (let i = 0; i < hand.length, i++) {
+    for (let i = 0; i < hand.length; i++) {
         cardValue = i % 13;
         if (cardValue > 0){ // #not an ace
             if (cardValue < 10) {
