@@ -29,7 +29,8 @@ web3.isConnected()
 
 pvtkey = input("type in your private key: ")
 creator_account = Account.from_key(pvtkey)
-beneficiary = str(input("type in beneficiary address: "))
+beneficiary_key = (input("type in a private key for the beneficiary: "))
+beneficiary = Account.from_key(beneficiary_key).address
 
 web3.eth.default_account = creator_account
 def init_game():
