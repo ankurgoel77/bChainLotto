@@ -53,7 +53,7 @@ def buyTicket(six_numbers):
 def main():
     while True:
 
-        choice = input("buy a ticket? Y or N ")
+        choice = input("buy a ticket for 1 ETH? Y or N ")
         if choice.upper() == "Y":
             choice = input("want to pick your own numbers? Y or N ")
             if choice.upper() == "Y":
