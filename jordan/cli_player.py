@@ -15,7 +15,7 @@ web3 = Web3(Web3.HTTPProvider(ganache_server))
 web3.isConnected()
 
 pvtkey = input("type in your private key: ")
-user_account = Account.from_key(pvtkey)
+user_account = Account.from_key(pvtkey).address
 contractAddress = input("type in contract address: ")
 contract = web3.eth.contract(address=contractAddress, abi=abi)
 web3.eth.default_account = user_account
@@ -31,6 +31,7 @@ def pick6():
         ticket.append(number)
         myset = myset - set([number])
     ticket.sort()
+    return ticket
     
 
 
@@ -50,27 +51,36 @@ def buyTicket(six_numbers):
     tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
 
 def main():
-    choice = input("buy a ticket? Y or N ")
-    if choice == "Y":
-        choice = input("want to pick your own numbers? Y or N ")
-        if choice == "Y":
-            chosen_nums = input("enter 6 numbers 1-60 separated by spaces: ")
-            chosen_nums = chosen_nums.split(" ")
-            chosen_nums = [int(i) for i in chosen_nums]
-            buyTicket(chosen_nums)
-        elif choice == "N":
-            buyTicket(pick6())
-    if choice == "N":
-        choice = "Menu === w for get winning numbers, L for check lotto pot "
-        if choice == "w":
-            isFinished = contract.functions.isFinished().call()
-            if isFinished:
-                print(f"The winning numbers are: {contract.functions.getWinningNumbers().call()}")
-            else:
-                print("Winning numbers are not available until the lotto has been drawn.")
+    while True:
 
-        elif choice == "L":
-            print(f"Current Pot: {contract.functions.lottoPot().call()}")
+        choice = input("buy a ticket for 1 ETH? Y or N ")
+        if choice.upper() == "Y":
+            choice = input("want to pick your own numbers? Y or N ")
+            if choice.upper() == "Y":
+                chosen_nums = input("enter 6 numbers 1-60 separated by spaces: ")
+                chosen_nums = chosen_nums.split(" ")
+                chosen_nums = [int(i) for i in chosen_nums]
+                buyTicket(chosen_nums)
+            elif choice.upper() == "N":
+                ticket = pick6()
+                buyTicket(ticket)
+                print(f"Here are your numbers: {ticket}")
+            continue
+
+        if choice.upper() == "N":
+            choice = input("Menu === w for get winning numbers, L for check lotto pot ")
+            if choice.upper() == "W":
+                isOpen = contract.functions.isOpen().call()
+                if isOpen != True:
+                    print(f"The winning numbers are: {contract.functions.getWinningNumbers().call()}")
+                else:
+                    print("Winning numbers are not available until the lotto has been drawn.")
+                break
+
+            elif choice.upper() == "L":
+                print(f"Current Pot: {contract.functions.lottoPot().call()}")
+                continue
+            
 
 
 

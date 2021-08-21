@@ -59,16 +59,16 @@ def finalize(contractAddress):
 
 def main():
     choice = input("construct game? Y or N ")
-    if choice == "Y":
+    if choice.upper() == "Y":
         contractAddress = init_game()
-        print(f"Contract address for players , {contractAddress}")
-        while choice != "Q":
-            choice = input("Menu === b for Balance, w for WinningNums, f for Finalize, Q for quit")
-            if choice == "b":
+        print(f"Contract address for players , {contractAddress} ")
+        while choice.upper() != "Q":
+            choice = input("Menu === b for Balance, w for WinningNums, f for Finalize, Q for quit ")
+            if choice.upper() == "B":
                 print(get_lottopot(contractAddress))
-            elif choice == "w":
+            elif choice.upper() == "W":
                 print(get_winningnums(contractAddress))
-            elif choice == "f":
+            elif choice.upper() == "F":
                 finalize(contractAddress)
 
 
