@@ -10,7 +10,7 @@
         <h1>Blockchain Poker</h1>
         Please enter your private key before beginning the game:<br>
         <label for="pvtkey">Account Private Key:</label>
-        <input type="text" id="pvtkey" name="pvtkey" value="">
+        <input type="text" id="pvtkey" name="pvtkey" value="19c39d738a899c34a9a58d36df9c2c1f8bb199c67ee45fbc585e42aab7154875">
         <button id="btn_pvtkey" name="btn_pvtkey"  onclick="getAddress()">Calculate Address</button>
         <br>
         <label for="acc_address">Your Account Address :</label>
@@ -20,9 +20,9 @@
         <output id="acc_balance" name="acc_balance"></output>
         <br>
         <label for="betAmount">How much Wei to bet?</label>
-        <input type="text" id="betAmount" name="betAmount" value="0">
+        <input type="text" id="betAmount" name="betAmount" value="100">
         <br>
-        <button id="btn_start" name="btn_start" onclick="constructGame()" disabled>Construct Game</button>
+        <button id="btn_start" name="btn_start" onclick="constructGame()">Construct Game</button>
         <br>
         <label for="game_address">Game Contract Address: </label>
         <output id=game_address" name="game_address"></output>
@@ -40,14 +40,10 @@
         <output id="dealer_card_hand" name="dealer_card_hand" style="font-size:80px;"></output>
         <br>
 
-
-
-        <p id="card" name="card" style="font-size:80px;">&#127137;</p>
-        <p id="para1">Some paragraph</p>
-        <label for="pvtkey">Account Private Key:</label>
-        <input type="text" id='pvtkey' name='pvtkey' value="d5046127ca371f85b9268b4c3b6a2b5fa891c66e38c2532726215a7ce4673d32">
-        <label for="acc_address">Your Account Address :</label>
-        <input type="text" id="acc_address" name="acc_address">
+        <button id="btn_hit" name="btn_hit" onclick="hit()">Hit</button>
+        <button id="btn_stand" name="btn_stand" onclick="stand()">Stand</button>
+        <button id="btn_double" name="btn_double" onclick="double()">Double Down</button>
+        
 
         
         <script src="main.js"></script>
