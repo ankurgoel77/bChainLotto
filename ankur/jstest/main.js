@@ -1,24 +1,32 @@
 
 function getAddress() {
-    const txt_pvtkey = document.querySelector('#pvtkey');
-    const acc_address = document.querySelector("#acc_address");
-    const acc_balance = document.querySelector("#acc_balance");
-    let pvtkey = txt_pvtkey.value;
-    let account = web3.eth.accounts.privateKeyToAccount(pvtkey);
-    acc_address.value = account.address;
-    web3.eth.getBalance(account.address).then(myTestFunction);
-    console.log(acc_balance.value);
+    player_pvt_key = txt_pvtkey.value;
+    player_account = web3.eth.accounts.privateKeyToAccount(player_pvt_key);
+    acc_address.value = player_account.address;
+    web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
 }
 
-function myTestFunction(value) {
-    const acc_balance = document.querySelector("#acc_balance");
-    acc_balance.value = value;
+function updatePlayerBalance(value) {
+    acc_balance.value = value + " Wei  ==> (" + web3.utils.fromWei(value,"ether") + " Ether)";
+    console.log(acc_balance.value);
+    btn_ante.disabled = false;
+}
+
+function beginGame() {
+    betAmount = txt_betAmount.value;
+    if (Number(betAmount) > 1) {
+        alert("max bet is 1 ether");
+        betAmount = "1";
+    }
+
+    betAmount = web3.utils.toWei(betAmount, "ether");
+
+    constructGame();
 }
 
 function constructGame() {
-    const txt_betAmount = document.querySelector("#betAmount");
-    let betAmount = Number(txt_betAmount.value);
-    let player = document.querySelector("#acc_address").value;
+    //player_account is web3.eth.account
+    //betAmount is a string in Wei
 
     let gasPrice = web3.eth.gasPrice;
     let gasPriceHex = web3.utils.toHex(gasPrice);
@@ -27,7 +35,6 @@ function constructGame() {
     let nonce = web3.eth.getTransactionCount(dealer_account.address, "pending");
     let nonceHex = web3.utils.toHex(nonce);
 
-    let contractData = null;
 
     // contractData = blackjackContract.new.getData(player, betAmount, {
     //     data: '0x' + bytecode["object"]
@@ -36,60 +43,117 @@ function constructGame() {
     let blackjackContract = new web3.eth.Contract(abi);
     blackjackContract.options.data = '0x'+bytecode["object"];
 
-    blackjackContract.deploy({arguments: [player, String(betAmount)]
+    blackjackContract.deploy({arguments: [player_account.address, betAmount]
     }).send({
         from: dealer_account.address,
         gasLimit : 6721975,
-        value : "251"
+        value : String( Math.trunc(Number(betAmount) * 2.5) + 1)
     }).then(function(newContractInstance){
-        console.log(newContractInstance.options.address);
-        currentContract = new web3.eth.Contract(abi, newContractInstance.options.address )
+        console.log("Contract Address is" + newContractInstance.options.address);
+        currentContract = new web3.eth.Contract(abi, newContractInstance.options.address );
+        ante();
     });
 
 
     
 
-    let rawTx = {
-        nonce : nonceHex,
-        gasPrice : gasPriceHex,
-        gasLimit : gasLimitHex,
-        data: contractData,
-        from : dealer_account.account,
-        value : "251"
-    }
+    // let rawTx = {
+    //     nonce : nonceHex,
+    //     gasPrice : gasPriceHex,
+    //     gasLimit : gasLimitHex,
+    //     data: contractData,
+    //     from : dealer_account.account,
+    //     value : "251"
+    // }
 
-    web3.eth.accounts.signTransaction(rawTx,dealer_pvt_key).then(console.log, console.log)
+    // web3.eth.accounts.signTransaction(rawTx,dealer_pvt_key).then(console.log, console.log)
     
 }
 
 function ante() {
-    let player = document.querySelector("#acc_address").value;
+    
     currentContract.methods.ante().send({
-        from : player,
-        value : "100",
+        from : player_account.address,
+        value : betAmount,
         gasLimit : 6721975,
     }).then(function(receipt) {
-        currentContract.methods.getPlayerHand().call({from: player}).then(function(value) {
-            document.querySelector('#player_string_hand').innerHTML = hand_to_str(value);
-            document.querySelector('#player_card_hand').innerHTML = hand_to_unicode(value);
-            currentContract.methods.getDealerHand().call({from:player}).then(function(value){
-                document.querySelector('#dealer_card_hand').innerHTML = hand_to_unicode(value);
+        currentContract.methods.getPlayerHand().call({from: player_account.address}).then(function(value) {
+            player_hand = value;
+            player_string_hand.innerHTML = hand_to_str(player_hand);
+            player_card_hand.innerHTML = hand_to_unicode(player_hand);
+            results.innerHTML = "Your hand value is " + hand_to_value(player_hand);
+            currentContract.methods.getDealerHand().call({from:player_account.address}).then(function(value) {
+                dealer_hand = value;
+                dealer_card_hand.innerHTML = hand_to_unicode(dealer_hand);
+                if (hand_to_value(dealer_hand) == 11) {
+                    btn_insurance.disabled = false;
+                }
             })
         })
     } );
+
+    btn_hit.disabled = false;
+    btn_stand.disabled = false;
+    btn_double.disabled = false;
+
 }
 
 function hit() {
-    let player = document.querySelector("#acc_address").value;
     currentContract.methods.hit().send({
-        from : player,
+        from : player_account.address,
         gasLimit : 6721975,
     }).then(function(receipt) {
-        currentContract.methods.getPlayerHand().call({from: player}).then(function(value) {
-            document.querySelector('#player_string_hand').innerHTML = hand_to_str(value);
-            document.querySelector('#player_card_hand').innerHTML = hand_to_unicode(value);
+        currentContract.methods.getPlayerHand().call({from: player_account.address}).then(function(value) {
+            player_hand = value;
+            player_string_hand.innerHTML = hand_to_str(player_hand);
+            player_card_hand.innerHTML = hand_to_unicode(player_hand);
+            if (hand_to_value(player_hand) > 21) {
+                endGame();
+                results.innerHTML = "You Busted! Your hand value is " + hand_to_value;
+                web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
+            } else {
+                btn_insurance.disabled = false;
+                btn_double.disabled = false;
+                results.innerHTML = "Your hand value is " + hand_to_value(player_hand);
+            }
+            
         })
     });
+}
+
+function stand() {
+    currentContract.methods.stand().send({
+        from : player_account.address,
+        gasLimit : 6721975,
+    }).then(function(receipt) {
+        currentContract.methods.getDealerHand().call({from: player_account.address}).then(function(value) {
+            dealer_hand = value;
+            dealer_string_hand.innerHTML = hand_to_str(dealer_hand);
+            dealer_card_hand.innerHTML = hand_to_unicode(dealer_hand);
+            endGame();
+            let dealer_hand_value = hand_to_value(dealer_hand);
+            let player_hand_value = hand_to_value(player_hand);
+            if (dealer_hand_value > 21) {
+                results.innerHTML = "Dealer Busted! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
+            } else if (dealer_hand_value < player_hand_value) {
+                results.innerHTML = "You Win! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+            } else if (dealer_hand_value == player_hand_value) {
+                results.innerHTML = "You Push. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+            } else {
+                results.innerHTML = "You Lose. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+            }
+            
+        })
+    });
+}
+
+function endGame() {
+    btn_ante.disabled = true;
+    btn_hit.disabled = true;
+    btn_double.disabled = true;
+    btn_stand.disabled = true;
+    btn_insurance.disabled = true;
 }
 
 function num_to_unicode(number) {
@@ -189,7 +253,7 @@ function hand_to_value(hand){
     let acesCount = 0
 
     for (let i = 0; i < hand.length; i++) {
-        cardValue = i % 13;
+        cardValue = hand[i] % 13;
         if (cardValue > 0){ // #not an ace
             if (cardValue < 10) {
                 baseValue += cardValue + 1;
@@ -230,6 +294,24 @@ function hand_to_value(hand){
     }
 }
 
+
+//pre-get all the buttons and boxes
+const txt_pvtkey = document.querySelector('#pvtkey');
+const acc_address = document.querySelector("#acc_address");
+const acc_balance = document.querySelector("#acc_balance"); 
+const txt_betAmount = document.querySelector("#betAmount");
+const player_string_hand = document.querySelector('#player_string_hand');
+const player_card_hand = document.querySelector('#player_card_hand');
+const dealer_string_hand = document.querySelector('#dealer_string_hand');
+const dealer_card_hand = document.querySelector('#dealer_card_hand');
+const btn_insurance = document.querySelector('#btn_insurance');
+const btn_ante = document.querySelector("#btn_ante");
+const btn_hit = document.querySelector('#btn_hit');
+const btn_stand = document.querySelector('#btn_stand');
+const btn_double = document.querySelector('#btn_double');
+const results = document.querySelector('#results');
+
+
 const provider = new Web3.providers.HttpProvider('http://127.0.0.1:8545');
 const web3 = new Web3(provider);
 
@@ -238,8 +320,16 @@ const web3 = new Web3(provider);
 
 let dealer_pvt_key = "d5046127ca371f85b9268b4c3b6a2b5fa891c66e38c2532726215a7ce4673d32";
 let dealer_account = web3.eth.accounts.privateKeyToAccount(dealer_pvt_key);
+let player_pvt_key = null;
+let player_account = null;
+
+let betAmount = "0";
 
 let currentContract = null;
+
+// the hands will become arrays upon ante
+let dealer_hand = null;
+let player_hand = null; 
 
 
 
