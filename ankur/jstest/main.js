@@ -85,7 +85,19 @@ function ante() {
             currentContract.methods.getDealerHand().call({from:player_account.address}).then(function(value) {
                 dealer_hand = value;
                 dealer_card_hand.innerHTML = hand_to_unicode(dealer_hand);
-                if (hand_to_value(dealer_hand) == 11) {
+
+                if (hand_to_value(player_hand) == 21) {  //player has blackjack
+                    endGame();
+                    web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
+                    if (hand_to_value(dealer_hand) == 21) {
+                        results.innerHTML = "You and the dealer both have Blackjack! Push! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+
+                    } else {
+                        results.innerHTML = "You have Blackjack! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+
+                    }
+
+                } else if (hand_to_value(dealer_hand) == 11) {
                     btn_insurance.disabled = false;
                 }
             })
@@ -109,11 +121,10 @@ function hit() {
             player_card_hand.innerHTML = hand_to_unicode(player_hand);
             if (hand_to_value(player_hand) > 21) {
                 endGame();
-                results.innerHTML = "You Busted! Your hand value is " + hand_to_value;
-                web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
+                results.innerHTML = "You Busted! Your hand value is " + hand_to_value(player_hand);
             } else {
-                btn_insurance.disabled = false;
-                btn_double.disabled = false;
+                btn_insurance.disabled = true;
+                btn_double.disabled = true;
                 results.innerHTML = "Your hand value is " + hand_to_value(player_hand);
             }
             
@@ -148,12 +159,53 @@ function stand() {
     });
 }
 
+function double() {
+    currentContract.methods.doubleDown().send({
+        from : player_account.address,
+        gasLimit : 6721975,
+        value : betAmount
+    }).then(function(receipt) {
+        console.l
+        currentContract.methods.getPlayerHand().call({from: player_account.address}).then(function(value) {
+            player_hand = value;
+            player_string_hand.innerHTML = hand_to_str(player_hand);
+            player_card_hand.innerHTML = hand_to_unicode(player_hand);
+            currentContract.methods.getDealerHand().call({from: player_account.address}).then(function(value) {
+                dealer_hand = value;
+                dealer_string_hand.innerHTML = hand_to_str(dealer_hand);
+                dealer_card_hand.innerHTML = hand_to_unicode(dealer_hand);
+                endGame();
+                let dealer_hand_value = hand_to_value(dealer_hand);
+                let player_hand_value = hand_to_value(player_hand);
+                if (dealer_hand_value > 21) {
+                    results.innerHTML = "Dealer Busted! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                    web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
+                } else if (dealer_hand_value < player_hand_value) {
+                    results.innerHTML = "You Win! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                } else if (dealer_hand_value == player_hand_value) {
+                    results.innerHTML = "You Push. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                } else {
+                    results.innerHTML = "You Lose. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                }
+                
+            })
+        })
+    });   
+}
+
+function playAgain() {
+    location.reload();
+    return false;
+}
+
 function endGame() {
     btn_ante.disabled = true;
     btn_hit.disabled = true;
     btn_double.disabled = true;
     btn_stand.disabled = true;
     btn_insurance.disabled = true;
+    btn_playAgain.disabled = false;
+    web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
 }
 
 function num_to_unicode(number) {
@@ -310,7 +362,7 @@ const btn_hit = document.querySelector('#btn_hit');
 const btn_stand = document.querySelector('#btn_stand');
 const btn_double = document.querySelector('#btn_double');
 const results = document.querySelector('#results');
-
+const btn_playAgain = document.querySelector("#btn_playAgain");
 
 const provider = new Web3.providers.HttpProvider('http://127.0.0.1:8545');
 const web3 = new Web3(provider);

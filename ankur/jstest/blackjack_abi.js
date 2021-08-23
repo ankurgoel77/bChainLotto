@@ -1,4 +1,4 @@
-let abi = [
+abi = [
 	{
 		"inputs": [
 			{
