@@ -5,7 +5,7 @@ function getAddress() {
         window.ethereum.enable();
         web3.eth.getAccounts().then(function(value) {
             player_address = value[0];
-            acc_address.player_address;
+            acc_address.value = player_address;
             web3.eth.getBalance(player_address).then(updatePlayerBalance);
             btn_ante.disabled = false;
         });
