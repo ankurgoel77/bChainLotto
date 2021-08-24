@@ -117,25 +117,43 @@ function ante() {
 }
 
 function hit() {
-    currentContract.methods.hit().send({
-        from : player_account.address,
-        gasLimit : 6721975,
-    }).then(function(receipt) {
-        currentContract.methods.getPlayerHand().call({from: player_account.address}).then(function(value) {
-            player_hand = value;
-            player_string_hand.innerHTML = hand_to_str(player_hand);
-            player_card_hand.innerHTML = hand_to_unicode(player_hand);
-            if (hand_to_value(player_hand) > 21) {
-                endGame();
-                results.innerHTML = "You Busted! Your hand value is " + hand_to_value(player_hand);
-            } else {
-                btn_insurance.disabled = true;
-                btn_double.disabled = true;
-                results.innerHTML = "Your hand value is " + hand_to_value(player_hand);
-            }
-            
+    //the hit contract function takes no arguments
+    let hit_data = currentContract.methods.hit().encodeABI();
+    let txObject5 = {
+        from: player_account.address,
+        value : "0",
+        data : hit_data,
+    }
+    currentContract.methods.hit().estimateGas(txObject5).then(function(value)
+    {
+        console.log("esimated gas is " + value);
+        let txObject6 = {
+            gas : value,
+            gasLimit : 6721975,
+            from : player_account.address,
+            data : hit_data,
+            value : "0",
+            to: currentContract.options.address,
+        }
+        web3.eth.accounts.signTransaction(txObject6, player_pvt_key).then(function(value){
+            let signedTx3 = value;
+            web3.eth.sendSignedTransaction(signedTx3.rawTransaction).then(function(value) {
+                currentContract.methods.getPlayerHand().call({from: player_account.address}).then(function(value) {
+                    player_hand = value;
+                    player_string_hand.innerHTML = hand_to_str(player_hand);
+                    player_card_hand.innerHTML = hand_to_unicode(player_hand);
+                    if (hand_to_value(player_hand) > 21) {
+                        endGame();
+                        results.innerHTML = "You Busted! Your hand value is " + hand_to_value(player_hand);
+                    } else {
+                        btn_insurance.disabled = true;
+                        btn_double.disabled = true;
+                        results.innerHTML = "Your hand value is " + hand_to_value(player_hand);
+                    }
+                })
+            })            
         })
-    });
+    })
 }
 
 function stand() {
