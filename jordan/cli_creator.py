@@ -57,19 +57,31 @@ def finalize(contractAddress):
     tx_hash = current_contract.functions.finalize().transact()
     tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
 
+def mywhileloop(contractAddress):
+    while choice.upper() != "Q":
+        choice = input("Menu === b for Balance, w for WinningNums, f for Finalize, L for list tickets, Q for quit ")
+        if choice.upper() == "B":
+            print(get_lottopot(contractAddress))
+        elif choice.upper() == "W":
+            print(get_winningnums(contractAddress))
+        elif choice.upper() == "F":
+            finalize(contractAddress)
+        elif choice.upper() == "L":
+            current_contract = web3.eth.contract(address=contractAddress, abi=abi)
+            ticket_filter = current_contract.events.ticketBought.createFilter(fromBlock="0x0", argumen_filters={})
+            print( ticket_filter.get_all_entries())
+
+
 def main():
     choice = input("construct game? Y or N ")
     if choice.upper() == "Y":
         contractAddress = init_game()
         print(f"Contract address for players , {contractAddress} ")
-        while choice.upper() != "Q":
-            choice = input("Menu === b for Balance, w for WinningNums, f for Finalize, Q for quit ")
-            if choice.upper() == "B":
-                print(get_lottopot(contractAddress))
-            elif choice.upper() == "W":
-                print(get_winningnums(contractAddress))
-            elif choice.upper() == "F":
-                finalize(contractAddress)
+        mywhileloop(contractAddress)
+    if choice == "N":
+        contractAddress = input("provide existing contract address : ")
+        mywhileloop(contractAddress)
+
 
 
 
