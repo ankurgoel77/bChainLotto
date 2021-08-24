@@ -157,31 +157,47 @@ function hit() {
 }
 
 function stand() {
-    currentContract.methods.stand().send({
-        from : player_account.address,
-        gasLimit : 6721975,
-    }).then(function(receipt) {
-        currentContract.methods.getDealerHand().call({from: player_account.address}).then(function(value) {
-            dealer_hand = value;
-            dealer_string_hand.innerHTML = hand_to_str(dealer_hand);
-            dealer_card_hand.innerHTML = hand_to_unicode(dealer_hand);
-            endGame();
-            let dealer_hand_value = hand_to_value(dealer_hand);
-            let player_hand_value = hand_to_value(player_hand);
-            if (dealer_hand_value > 21) {
-                results.innerHTML = "Dealer Busted! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
-                web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
-            } else if (dealer_hand_value < player_hand_value) {
-                results.innerHTML = "You Win! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
-            } else if (dealer_hand_value == player_hand_value) {
-                results.innerHTML = "You Push. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
-            } else {
-                results.innerHTML = "You Lose. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
-            }
-            
+    let stand_data = currentContract.methods.stand().encodeABI();
+    let txObject7 = {
+        from: player_account.address,
+        value: "0",
+        data : stand_data,
+    }
+    currentContract.methods.hit().estimateGas(txObject7).then(function(value) {
+        let txObject8 = {
+            gas: value,
+            gasLimit: 6721975,
+            from : player_account.address,
+            data: stand_data,
+            value: "0",
+            to: currentContract.options.address,
+        }
+        web3.eth.accounts.signTransaction(txObject8,player_pvt_key).then(function(value) {
+            let signedTx4 = value;
+            web3.eth.sendSignedTransaction(signedTx4.rawTransaction).then(function(value) {
+                currentContract.methods.getDealerHand().call({from: player_account.address}).then(function(value) {
+                    dealer_hand = value;
+                    dealer_string_hand.innerHTML = hand_to_str(dealer_hand);
+                    dealer_card_hand.innerHTML = hand_to_unicode(dealer_hand);
+                    endGame();
+                    let dealer_hand_value = hand_to_value(dealer_hand);
+                    let player_hand_value = hand_to_value(player_hand);
+                    if (dealer_hand_value > 21) {
+                        results.innerHTML = "Dealer Busted! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                        web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
+                    } else if (dealer_hand_value < player_hand_value) {
+                        results.innerHTML = "You Win! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                    } else if (dealer_hand_value == player_hand_value) {
+                        results.innerHTML = "You Push. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                    } else {
+                        results.innerHTML = "You Lose. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                    }    
+                })
+            })
         })
-    });
+    })
 }
+
 
 function double() {
     currentContract.methods.doubleDown().send({
