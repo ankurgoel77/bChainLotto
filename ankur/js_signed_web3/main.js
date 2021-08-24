@@ -95,6 +95,8 @@ function ante() {
                         if (hand_to_value(player_hand) == 21) {  //player has blackjack
                             endGame();
                             web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
+                            let player_hand_value = hand_to_value(player_hand);
+                            let dealer_hand_value = hand_to_value(dealer_hand);
                             if (hand_to_value(dealer_hand) == 21) {
                                 results.innerHTML = "You and the dealer both have Blackjack! Push! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
                             } else {
@@ -198,39 +200,51 @@ function stand() {
     })
 }
 
-
 function double() {
-    currentContract.methods.doubleDown().send({
-        from : player_account.address,
-        gasLimit : 6721975,
-        value : betAmount
-    }).then(function(receipt) {
-        console.l
-        currentContract.methods.getPlayerHand().call({from: player_account.address}).then(function(value) {
-            player_hand = value;
-            player_string_hand.innerHTML = hand_to_str(player_hand);
-            player_card_hand.innerHTML = hand_to_unicode(player_hand);
-            currentContract.methods.getDealerHand().call({from: player_account.address}).then(function(value) {
-                dealer_hand = value;
-                dealer_string_hand.innerHTML = hand_to_str(dealer_hand);
-                dealer_card_hand.innerHTML = hand_to_unicode(dealer_hand);
-                endGame();
-                let dealer_hand_value = hand_to_value(dealer_hand);
-                let player_hand_value = hand_to_value(player_hand);
-                if (dealer_hand_value > 21) {
-                    results.innerHTML = "Dealer Busted! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
-                    web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
-                } else if (dealer_hand_value < player_hand_value) {
-                    results.innerHTML = "You Win! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
-                } else if (dealer_hand_value == player_hand_value) {
-                    results.innerHTML = "You Push. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
-                } else {
-                    results.innerHTML = "You Lose. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
-                }
-                
+    let double_data = currentContract.methods.doubleDown().encodeABI();
+    let txObject9 = {
+        from: player_account.address,
+        value: betAmount,
+        data : double_data,
+    }
+    currentContract.methods.doubleDown().estimateGas(txObject9).then(function(value) {
+        let txObject10 = {
+            gas: value,
+            gasLimit: 6721975,
+            from: player_account.address,
+            data: double_data,
+            value: betAmount,
+            to: currentContract.options.address,
+        }
+        web3.eth.accounts.signTransaction(txObject10, player_pvt_key).then(function(value){
+            let signedTx5 = value;
+            web3.eth.sendSignedTransaction(signedTx5.rawTransaction).then(function(value) {
+                currentContract.methods.getPlayerHand().call({from: player_account.address}).then(function(value) {
+                    player_hand = value;
+                    player_string_hand.innerHTML = hand_to_str(player_hand);
+                    player_card_hand.innerHTML = hand_to_unicode(player_hand);
+                    currentContract.methods.getDealerHand().call({from: player_account.address}).then(function(value) {
+                        dealer_hand = value;
+                        dealer_string_hand.innerHTML = hand_to_str(dealer_hand);
+                        dealer_card_hand.innerHTML = hand_to_unicode(dealer_hand);
+                        endGame();
+                        let dealer_hand_value = hand_to_value(dealer_hand);
+                        let player_hand_value = hand_to_value(player_hand);
+                        if (dealer_hand_value > 21) {
+                            results.innerHTML = "Dealer Busted! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                            web3.eth.getBalance(player_account.address).then(updatePlayerBalance);
+                        } else if (dealer_hand_value < player_hand_value) {
+                            results.innerHTML = "You Win! Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                        } else if (dealer_hand_value == player_hand_value) {
+                            results.innerHTML = "You Push. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                        } else {
+                            results.innerHTML = "You Lose. Your hand value is " + player_hand_value + " and dealer hand value is " + dealer_hand_value;
+                        }
+                    })
+                })    
             })
         })
-    });   
+    })
 }
 
 function playAgain() {

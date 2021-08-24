@@ -165,7 +165,6 @@ function double() {
         gasLimit : 6721975,
         value : betAmount
     }).then(function(receipt) {
-        console.l
         currentContract.methods.getPlayerHand().call({from: player_account.address}).then(function(value) {
             player_hand = value;
             player_string_hand.innerHTML = hand_to_str(player_hand);
