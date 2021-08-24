@@ -1,4 +1,5 @@
 import json
+from toolz.itertoolz import first
 from web3 import Web3
 
 from eth_account import Account
@@ -57,7 +58,23 @@ def finalize(contractAddress):
     tx_hash = current_contract.functions.finalize().transact()
     tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
 
+def listTickets(contractAddress):
+    print(" ")
+    print("======= TICKET LIST ===================")
+    current_contract = web3.eth.contract(address=contractAddress, abi=abi)
+    ticket_filter = current_contract.events.ticketBought.createFilter(fromBlock="0x0", argument_filters={})
+    for entry in ticket_filter.get_all_entries():
+        myEvent = entry["args"]
+        myTicket = ""
+        for i in range(1,6+1):
+            key = f'num{i}'
+            myTicket += str(myEvent[key]) + " "
+        print("Wallet Address " + myEvent["buyer"] + " bought the following numbers: " + myTicket)
+    print("==================")
+    print("")
+
 def mywhileloop(contractAddress):
+    choice = ""
     while choice.upper() != "Q":
         choice = input("Menu === b for Balance, w for WinningNums, f for Finalize, L for list tickets, Q for quit ")
         if choice.upper() == "B":
@@ -67,9 +84,7 @@ def mywhileloop(contractAddress):
         elif choice.upper() == "F":
             finalize(contractAddress)
         elif choice.upper() == "L":
-            current_contract = web3.eth.contract(address=contractAddress, abi=abi)
-            ticket_filter = current_contract.events.ticketBought.createFilter(fromBlock="0x0", argumen_filters={})
-            print( ticket_filter.get_all_entries())
+            listTickets(contractAddress)
 
 
 def main():
