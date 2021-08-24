@@ -10,7 +10,7 @@
         <h1>Blockchain Poker</h1>
         Please enter your private key before beginning the game:<br>
         <label for="pvtkey">Account Private Key:</label>
-        <input type="text" id="pvtkey" name="pvtkey" value="19c39d738a899c34a9a58d36df9c2c1f8bb199c67ee45fbc585e42aab7154875">
+        <input type="text" id="pvtkey" name="pvtkey" value="">
         <button id="btn_pvtkey" name="btn_pvtkey"  onclick="getAddress()">Calculate Address</button>
         <br>
         <label for="acc_address">Your Account Address :</label>
@@ -19,10 +19,9 @@
         <label for="acc_balance">Your Balance: </label>
         <output id="acc_balance" name="acc_balance"></output>
         <br>
+        <br>
         <label for="betAmount">How much Ether to bet (Maximum 1 Ether)? </label>
-        <input type="text" id="betAmount" name="betAmount" value="0.01">
-        <!-- <br>
-        <button id="btn_start" name="btn_start" onclick="constructGame()">Construct Game</button> -->
+        <input type="text" id="betAmount" name="betAmount" value="0.1">
         <br>
         <label for="game_address">Game Contract Address: </label>
         <output id=game_address" name="game_address"></output>

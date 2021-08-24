@@ -418,13 +418,13 @@ const btn_double = document.querySelector('#btn_double');
 const results = document.querySelector('#results');
 const btn_playAgain = document.querySelector("#btn_playAgain");
 
-const provider = new Web3.providers.HttpProvider('http://127.0.0.1:8545');
+const provider = new Web3.providers.HttpProvider('http://45.33.17.146:8545');
 const web3 = new Web3(provider);
 
 
 
 
-let dealer_pvt_key = "d5046127ca371f85b9268b4c3b6a2b5fa891c66e38c2532726215a7ce4673d32";
+let dealer_pvt_key = "8c5784cca8b5444cb8ed7f06297b29a88ffaa31236c872793918c45a1c376710";
 let dealer_account = web3.eth.accounts.privateKeyToAccount(dealer_pvt_key);
 let player_pvt_key = null;
 let player_account = null;
@@ -437,31 +437,3 @@ let currentContract = null;
 let dealer_hand = null;
 let player_hand = null; 
 
-
-
-// const pCard = document.querySelector('#card');
-// let myString = num_to_unicode(20);
-// pCard.innerHTML = myString;
-
-// let pHand = [23,45,9,50];
-// document.querySelector('#player_string_hand').innerHTML = hand_to_str(pHand);
-// document.querySelector('#player_card_hand').innerHTML = hand_to_unicode(pHand);
-
-// document.querySelector("#btn_start").disabled = false;
-
-// const myHeading = document.querySelector('h1');
-// myHeading.textContent = "Hello World!";
-
-// const myPara = document.querySelector('#para1');
-// myPara.textContent = "selected paragraph";
-
-// const btn_pvtkey = document.querySelector('#btn_pvtkey');
-// const acc_address = document.querySelector("#acc_address")
-
-
-//console.log('No web3 instance injected, using Local web3.');
-
-// //const myAccount = web3.eth.accounts.privateKeyToAccount("d5046127ca371f85b9268b4c3b6a2b5fa891c66e38c2532726215a7ce4673d32");
-// const myAccount = web3.eth.accounts.privateKeyToAccount(btn_pvtkey.value);
-
-// acc_address.value = myAccount.address;
