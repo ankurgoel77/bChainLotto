@@ -64,10 +64,51 @@ These private keys were provided to our classmates and instructors for use.
 
 # Lotto Smart Contract
 
+[BlockLottoGame.sol](jordan/BlockLottoGame.sol) is the solidity contract that represents a single lottery. The contract must be re-deployed each time a new lottery is played.
+
+afda;fja;fja;f
+
+In order to find winning tickets and pay out the winners, we need to create a mapping between tickets and buyer addresses. The initial idea was to create a `mapping(address payable => uint[6])` ; however, that created a real problem because we have to loop through the entire mapping and match each ticket against the winning numbers, which could easily exceed gas limits if we sell millions of tickets in the lottery.  Instead, we created a mapping of ticket => buyer, so that the winning ticket is the key to the map.  Unfortunately, Solidity does not allow an array or a struct to be a mapping key, so we had to encode the winning ticket into a uint64.  This allows for a `mapping(uint64 => address payable)` and returns all addresses that purchased tickets that match the winning numbers. The function `encodeTicket` will accept 6 uint8's as the input and return a `uint64` where each number is byte shifted to allow it to be packed into the `uint64`, which is then used as a key to the mapping.
+
+al;kdfjak;fa;kjfa
+
+
 # Lotto Python User Interface
 
 # Lotto Number Analysis
 
 # BlackJack Smart Contract
+
+[blackjack_1player.sol](ankur/blackjack_1player.sol) is the solidity contract that represents a single BlackJack game. The contract must be re-deployed each time a new game is played.
+
+Each card is represented by an integer from 0-51:
+    * 0-12 is Ace to King of Spades
+    * 13-25 is Ace to King of Hearts
+    * 26-38 is Ace to King of Diamonds
+    * 39 to 51 is Ace to King of Clubs
+
+The dealer will hit on any hand of 16 or below, and stand on 17 or above, regardless of how many aces it has.
+
+The contract stores both the player hand and the dealer hand as `uint8[]` arrays.  It also stores the deck as a `uint8[52]`.
+
+The dealer deploys the contract and calls the `constructor` with the player's address and the amount of the bet.  The `constructor` is a payable function, and the dealer must provide at least 2.5X the bet amount as a staking pot.
+
+The player will then need to call `ante`.  The `ante` function will deal out 2 cards each to the player and the dealer.  If the player has BlackJack, but the dealer does not, the player gets paid out 2.5X his bet.  If both player and dealer have BlackJack, the player gets his bet back as a push.
+
+After `ante`, the player has the option to call `doubleDown`. This is only allowed immediately after `ante`.  A single card will be dealt to the player, and then the dealer will play out until a winner is declared.
+
+The player will then need to call `hit` as many times as they need to. If the player ever busts over 21, the game will immediately end.
+
+If a player is at 21 or below, he can call `stand`. This will cause the dealer to play its hand out. If the player beats the dealer, he gets 2X his original bet.  Any money remaining in the pot is paid back to the dealer.
+
+At any time, the dealer can call `endGame` if the player is unresponsive. This will return the bet amount to the player and the staking amount to the dealer and then finish the game.
+
+The following view functions are available as well:
+
+* `getPlayerHand` will return an array of the player's cards
+* `getDealerhand` will return the dealer's face-up card during the game, and the entire dealer's hand once the game is finished
+* `getPlayerHandValue` will return the numerical value of the player's cards
+* `isFinished` - true if game is finished, false otherwise
+* `isStarted` - true if player has ante'd up, false otherwise
 
 # BlackJack Web User Interface
