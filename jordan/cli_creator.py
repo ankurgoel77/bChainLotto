@@ -69,8 +69,9 @@ def listTickets(contractAddress):
         for i in range(1,6+1):
             key = f'num{i}'
             myTicket += str(myEvent[key]) + " "
+
         print("Wallet Address " + myEvent["buyer"] + " bought the following numbers: " + myTicket)
-    print("==================")
+    print("=======================================")
     print("")
 
 def mywhileloop(contractAddress):
@@ -93,7 +94,7 @@ def main():
         contractAddress = init_game()
         print(f"Contract address for players , {contractAddress} ")
         mywhileloop(contractAddress)
-    if choice == "N":
+    if choice.upper() == "N":
         contractAddress = input("provide existing contract address : ")
         mywhileloop(contractAddress)
 

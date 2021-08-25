@@ -11,11 +11,13 @@ abi = json.load(f)
 f.close()
 
 ganache_server = "http://127.0.0.1:8545"
+# ganache_server = "http://45.33.17.146:8545"
 web3 = Web3(Web3.HTTPProvider(ganache_server))
 web3.isConnected()
 
 pvtkey = input("type in your private key: ")
 user_account = Account.from_key(pvtkey).address
+print(f"Your wallet address is: {user_account} ")
 contractAddress = input("type in contract address: ")
 contract = web3.eth.contract(address=contractAddress, abi=abi)
 web3.eth.default_account = user_account
@@ -60,7 +62,9 @@ def main():
                 chosen_nums = input("enter 6 numbers 1-60 separated by spaces: ")
                 chosen_nums = chosen_nums.split(" ")
                 chosen_nums = [int(i) for i in chosen_nums]
+                chosen_nums.sort()  
                 buyTicket(chosen_nums)
+                print(f"Here are your numbers: {chosen_nums}")
             elif choice.upper() == "N":
                 ticket = pick6()
                 buyTicket(ticket)

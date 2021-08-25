@@ -3,7 +3,7 @@
 This game has a player create and manage the lottery, while players upon a game starting have options to buy tickets, check the pot, and get the winning numbers for the lotto. 
 
 ## Creator
-The creator will run `cli_creator.py` and input:
+The creator will run ` python cli_creator.py` and input:
 - private key for the account starting contract
 - private key for beneficiary 
 
@@ -13,7 +13,7 @@ From here, the creator can check the pot, finalize the lotto, and generate the w
 - generating the winning numbers requires the lotto to be finalized (recommended to wait for enough players to generate a suitable pot)
 
 ## Player
-Once the creator has deployed the contract, the player will run `cli_player.py`
+Once the creator has deployed the contract, the player will run `python cli_player.py` in bash.
 
 Player will then input their private key and the address of the contract when prompted.
 
@@ -24,7 +24,7 @@ Player options will now appear in the following order
     <details>
     <summary>Y</summary>
     <br>
-    Player gets option to choose 6 numbers (Y/N). Numbers should be between 1 and 60. Upon choice, ticket numbers will then be displayed. 
+    Player gets option to choose 6 numbers (Y/N). Chosen numbers should be between 1 and 60. If player chooses not to choose numbers, 6 numbers will be randomly picked. Ticket numbers will be displayed afterwards. 
     </details>
 
     <details>
