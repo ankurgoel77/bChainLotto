@@ -13,27 +13,27 @@ contract BlackJack_1player {
     
     // insurance is only offered if player does not already have blackjack
     
-    // This contract requires the dealer to cover 1.5X the bet of the player
-    // Dealer transfers 1.5X the bet in the constructor, and then player has to send bet by calling ante
+    // This contract requires the dealer to cover 2.5X the bet of the player
+    // Dealer transfers 2.5X the bet in the constructor, and then player has to send bet by calling ante
 
     
     address payable player;
     address payable dealer;
     
-    uint public bet;
-    uint8[] playerHand;
-    uint8 playerHandValue;
-    uint8[] dealerHand;
-    uint8 dealerHandValue;
+    uint public bet;        // Bet amount in Wei
+    uint8[] playerHand;     // an array of integers representing player's hand
+    uint8 playerHandValue;  // The numerical value of the hand in BlackJack rules
+    uint8[] dealerHand;     // an array of integers represneting the dealer's hand
+    uint8 dealerHandValue;  // The numerical value of the hand
 
-    uint8[52] deck;
-    uint8 deckLength;
+    uint8[52] deck;         // 52 cards in a deck
+    uint8 deckLength;       // the length of the deck starts at 52, and is reduced by 1 after dealing a card
     
-    bool public isFinished;
-    bool public isStarted;
+    bool public isFinished; // isFinished is true when the game is over and either player or dealer wins, or push
+    bool public isStarted;  // isStarted is true after the player ante's up their money
     
     // constructor will start the contract.  msg.sender is the dealer.  
-    // dealer puts ether in contract first and awaits ante for player to send ether
+    // dealer puts Ether in contract first and awaits ante() for player to send Ether
     // player must call getPlayerHand and getDealerHand to see results of deal
     // player must call ante to send bet and start the game
     constructor (address payable _player, uint _bet) public payable {
@@ -47,7 +47,11 @@ contract BlackJack_1player {
         isFinished = false;
         isStarted = false;
     }
-    
+
+    // getHandValue calculates the numerical score of a hand in Blackjack
+    // it assigns values 2 to 9 for cars from 2 to 9
+    // it assigns 10 for cards from 10/J/Q/K
+    // it then counts number of aces and chooses either 1 or 11, maximizing the hand value without going over 21
     function getHandValue(uint8[] storage hand) internal view returns (uint8) {
         // aces suck:  
         //   If a hand has 1 ace, add 1 or 11
@@ -101,7 +105,7 @@ contract BlackJack_1player {
         }
     }
     
-    // player can always call this function to get total value of hand
+    // player can always call this public view function to get total value of hand
     function getPlayerHandValue() public view returns (uint8) {
         return getHandValue(playerHand);
     }
@@ -111,11 +115,14 @@ contract BlackJack_1player {
         return getHandValue(dealerHand);
     }
     
-    // Call this function anytime to get the contract's balance, and the pot balance.  These 2 numbers should always be equal!
+    // Call this function anytime to get the contract's balance
     function getBalance() public view returns (uint) {
         return (address(this).balance);
     }
     
+    // ante() must be called by player once the game is constructed. 
+    // It initializes the deck from 0 to 51, sets isStarted to true, and calls deal()
+    // It then checks to see if player got blackjack and if dealer got blackjack
     function ante() public payable {
         require (msg.sender == player, "only player can ante up");
         require (msg.value >= bet, "must send at least bet amount to ante.  excess will be returned");
@@ -152,7 +159,8 @@ contract BlackJack_1player {
         }
     }
     
-    //increment the counter every time you deal within a single transaction to make sure keccak256 hashes a different number
+    // function dealSingleCard should be called when the player need to hit, or it is the dealer's turn and needs to hit
+    // increment the counter every time you deal within a single transaction to make sure keccak256 hashes a different number
     function dealSingleCard(uint8 counter) internal returns (uint8) {
         uint8 random;
         uint8 card;
@@ -163,6 +171,10 @@ contract BlackJack_1player {
         return card;
     }
     
+    // function deal() is only called once per game during the ante().  
+    // it will generate 4 random numbers and pull them from the deck array, insuring the cards are unique by decrementing the deckLength on each deal
+    //    and removing the dealt card from the array
+    // 2 cards will be placed in playerHand, and 2 cards in the dealerHand
     function deal() internal {
         uint8 random;
         
@@ -187,10 +199,14 @@ contract BlackJack_1player {
         deckLength -= 1;    
     }
     
+    // public function to view the player's hand after ante
     function getPlayerHand() public view returns (uint8[] memory) {
         return playerHand;
     }
-    
+
+    // this public function will view the dealer's hand; HOWEVER!
+    //  if the game is not finished, only the dealer's face card is returned
+    //  once the game is finished, it will return the entire dealer's hand
     function getDealerHand() public view returns (uint8[] memory) {
         if (isFinished) {
             return dealerHand;
@@ -204,6 +220,9 @@ contract BlackJack_1player {
         }
     }
     
+    // stand() is called by the player if they are satisifed with the value of their hand
+    //  it will deal cards to the dealer until a hard 17 or the dealer goes bust
+    //  once the dealer is complete, it will pay out whoever has the best hand without going over 21
     function stand() public {
         require(isStarted, "cannot call Stand without starting game");
         require(!isFinished, "cannot call Stand when game has already ended");
@@ -227,6 +246,8 @@ contract BlackJack_1player {
         dealer.transfer(address(this).balance);  // any remaining money in the contract goes back to the dealer
     }
     
+    // hit() is called by player if they want another card.
+    //  if the player's hand goes over 21, they bust immediately and the game is finished.
     function hit() public {
         require(isStarted, "cannot call hit without starting game");
         require(!isFinished, "cannot call hit when game has already ended");
@@ -239,6 +260,8 @@ contract BlackJack_1player {
         }
     }
     
+    // doubleDown() allows the player to double their bet immediately after the ante and take only 1 card. 
+    //  it will deal one card to the player.  If they don't bust, it will call stand() to allow the dealer to deal
     function doubleDown() public payable {
         require(playerHand.length == 2, "can only double down when showing 2 cards");
         playerHand.push(dealSingleCard(0));
@@ -252,9 +275,6 @@ contract BlackJack_1player {
             stand();
         }
     }
-    
-    //function split() public returns () {}
-    
     
     // if dealer has blackjack, buyInsurance returns true, and will payout 2-to-1 on insurance bets, and game will end on this function call.  
     // if player also has blackjack, dealer get 1X bet and player gets 1X bet (push)
