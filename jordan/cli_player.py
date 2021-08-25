@@ -10,8 +10,8 @@ f = open("abi.json")
 abi = json.load(f)
 f.close()
 
-ganache_server = "http://127.0.0.1:8545"
-# ganache_server = "http://45.33.17.146:8545"
+# ganache_server = "http://127.0.0.1:8545"
+ganache_server = "http://45.33.17.146:8545"
 web3 = Web3(Web3.HTTPProvider(ganache_server))
 web3.isConnected()
 
