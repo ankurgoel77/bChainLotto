@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+        <p id="cards" name="cards" style="font-size:80px;">sfgsfg</p>
+        <button id="btn_cards" name="btn_cards" onclick="getCards()">click for cards</button>
+        <script>
+            function getCards(){
+            let cards = document.querySelector("#cards");
+            let str = "";
+            let codepoint = "";
+            for (let i = 0; i<52; i++)
+            {
+                let div = Math.trunc(i/13);
+                let mod = i % 13;
+                if (mod >= 11) {
+                    mod += 1  //correct for knight card
+                }
+                switch(div) {
+                    case 0:
+                        codepoint = 127137 + mod;
+                        break;
+                    case 1:
+                        codepoint = 127153 + mod;
+                        break;
+                    case 2:
+                        codepoint = 127169 + mod;
+                        break;
+                    case 3:
+                        codepoint = 127185 + mod;
+                        break;
+                }
+            str += '&#' + String(codepoint) +';';
+            }
+            cards.innerHTML = str;
+            }
+        </script>
+    </body>
+</html>

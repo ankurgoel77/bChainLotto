@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="blackjack_abi.js"></script>
+    <script src="blackjack_bytecode.js"></script>
+    <head>
+        <title>BlockChain Poker v3 with Metamask</title>
+    </head>
+    <body>
+        <h1>Blockchain Poker Using MetaMask</h1>
+        Click to Unlock Metamask:<br>
+        <button id="btn_unlock" name="btn_unlock"  onclick="getAddress()">Get Metamask Address</button>
+        <br>
+        <label for="acc_address">Your Account Address :</label>
+        <output id="acc_address" name="acc_address"></output>
+        <br>
+        <label for="acc_balance">Your Balance: </label>
+        <output id="acc_balance" name="acc_balance"></output>
+        <br>
+        <label for="betAmount">How much Ether to bet (Maximum 1 Ether)? </label>
+        <input type="text" id="betAmount" name="betAmount" value="0.01">
+        <br>
+        <label for="game_address">Game Contract Address: </label>
+        <output id=game_address" name="game_address"></output>
+        <br>
+        <button id="btn_ante" name="btn_ante" onclick="beginGame()" disabled>Ante up!</button>
+        <br>
+        <label for="player_string_hand">Player Hand:</label>
+        <output id="player_string_hand" name="player_string_hand"></output>
+        <br>
+        <output id="player_card_hand" name="player_card_hand" style="font-size:90px;"></output>
+        <br>
+        <label for="dealer_string_hand">Dealer Hand:</label>
+        <output id="dealer_string_hand" name="dealer_string_hand"></output>
+        <br>
+        <output id="dealer_card_hand" name="dealer_card_hand" style="font-size:90px;"></output>
+        <br>
+
+        <button id="btn_insurance" name="btn_insurance" onclick ="insurance()" disabled>Buy Insurance</button>
+        <button id="btn_hit" name="btn_hit" onclick="hit()" disabled>Hit</button>
+        <button id="btn_stand" name="btn_stand" onclick="stand()" disabled>Stand</button>
+        <button id="btn_double" name="btn_double" onclick="double()" disabled>Double Down</button>
+        <br>
+        <label for="results">Game Results: </label>
+        <output id="results" name="results"></output>
+        <br>
+        <button id="btn_playAgain" name="btn_playAgain" onclick="playAgain()" disabled>Click to play again.</button>
+        
+
+        
+        <script src="main.js"></script>
+    </body>
+</html>

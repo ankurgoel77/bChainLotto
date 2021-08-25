@@ -21,7 +21,7 @@ with open(csvpath, "r") as csvfile:
         tx = {
             "nonce": nonce,
             "to" : current_address,
-            "value" : web3.toWei(2, "ether"),
+            "value" : web3.toWei(100, "ether"),
             "gas" : 2000000,
             "gasPrice" : web3.toWei("50", "gwei")
         }
