@@ -46,6 +46,8 @@ Using the [BIP39 tool](https://github.com/iancoleman/bip39/releases/tag/0.5.3), 
 * public key : 0x0376025d39ec6cc2e42f45bddbfee2607648c907c41e9dfd7954cfb41d2c78aaa4
 * private key : 0x8c5784cca8b5444cb8ed7f06297b29a88ffaa31236c872793918c45a1c376710
 
+We use the same mnemonic to derive a total of 2000 addresses and store them in a CSV file located at [bip39_addresses.csv](ankur/bip39_addresses.csv).
+
 Finally, we can instantiate the chain with a single address with a large amount of ether (priced in wei).  This command is 32 zeros, so 10^14 ether:
 
 > ganache-cli --chainId 5337 --db ./gandb -v -h 45.33.17.146  --account="0x8c5784cca8b5444cb8ed7f06297b29a88ffaa31236c872793918c45a1c376710,100000000000000000000000000000000" 
@@ -56,7 +58,9 @@ However, should we ever need to re-start our chain from scratch, we simply delet
 
 > rm -rf gandb
 
+For testing purposes for ourselves and our classmates, we need accounts with several Ether pre-loaded. [init_bchain.py](ankur/init_bchain.py) is a Python script that uses Web3py to load in the 2000 accounts in the CSV file and transfer them 100 ETH each.
 
+These private keys were provided to our classmates and instructors for use.
 
 # Lotto Smart Contract
 
