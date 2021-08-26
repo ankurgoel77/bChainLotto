@@ -1,4 +1,5 @@
 
+// Get Address converts the Player Private Key into an address and then gets the account balance
 function getAddress() {
     if (window.ethereum) {
         web3 = new Web3(window.ethereum);
@@ -12,12 +13,14 @@ function getAddress() {
     }
 }
 
+// Updates the UI for player's ETH balance
 function updatePlayerBalance(value) {
     acc_balance.value = value + " Wei  ==> (" + web3.utils.fromWei(value,"ether") + " Ether)";
     console.log(acc_balance.value);
     btn_ante.disabled = false;
 }
 
+// Called when ante is pressed.  It checks that balance is correctly entered than calls constructGame
 function beginGame() {
     betAmount = txt_betAmount.value;
     if (Number(betAmount) > 1) {
@@ -30,6 +33,7 @@ function beginGame() {
     constructGame();
 }
 
+// This function uses the dealer account to deploy the Blackjack contract and then call ante
 function constructGame() {
     //player_account is web3.eth.account
     //betAmount is a string in Wei
@@ -49,6 +53,7 @@ function constructGame() {
     });
 }
 
+// This function uses the player account to call ante on the contract
 function ante() {
     currentContract.methods.ante().send({
         from : player_address,
@@ -88,6 +93,7 @@ function ante() {
 
 }
 
+// This function uses the player account to call hit on the contract
 function hit() {
     currentContract.methods.hit().send({
         from : player_address,
@@ -110,6 +116,7 @@ function hit() {
     });
 }
 
+// This function uses the player account to call stand on the contract
 function stand() {
     currentContract.methods.stand().send({
         from : player_address,
@@ -137,6 +144,7 @@ function stand() {
     });
 }
 
+// This function uses the player account to call doubleDown on the contract
 function double() {
     currentContract.methods.doubleDown().send({
         from : player_address,
@@ -170,11 +178,13 @@ function double() {
     });   
 }
 
+// This function simply reloads the page, similar to F5
 function playAgain() {
     location.reload();
     return false;
 }
 
+// This function grays out all the buttons once the game is over
 function endGame() {
     btn_ante.disabled = true;
     btn_hit.disabled = true;
@@ -185,6 +195,7 @@ function endGame() {
     web3.eth.getBalance(player_address).then(updatePlayerBalance);
 }
 
+// This function creates a string that generates unicode codepoints for a single playing card and spans it with a color
 function num_to_unicode(number) {
     let codepoint = 0;
     let mod = number % 13;
@@ -220,6 +231,7 @@ function num_to_unicode(number) {
     }
 }
 
+// This function creates a string that describes a card
 function num_to_str(number) {
     let card_str = "";
     let mod = number % 13;
@@ -260,6 +272,7 @@ function num_to_str(number) {
     return card_str
 }
 
+// This function loops over num_to_unicode to generate codepoints for an entire hand
 function hand_to_unicode(hand) {
     value = "";
     for (let i = 0; i < hand.length; i++) {
@@ -268,6 +281,7 @@ function hand_to_unicode(hand) {
     return value
 }
 
+// This function loops over num_to_str to generate a description of a hand
 function hand_to_str(hand) {
     value = [];
     for (let i = 0; i < hand.length; i++) {
@@ -276,6 +290,7 @@ function hand_to_str(hand) {
     return value.join(', ');
 }
 
+// This function calculates the value of a hand
 function hand_to_value(hand){
     let baseValue = 0
     let cardValue = 0

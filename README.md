@@ -27,6 +27,32 @@ Group responsibilities were as follows:
     * [index.html](ankur/js_signed_web3/index.html) and [main.js](ankur/js_signed_web3/main.js) are a web UI using the public testnet's accounts that are locked, to test web3js's ability to sign transactions  
     * [index.html](ankur/js_metamask/index.html) and [main.js](ankur/js_metamask/main.js) are a web UI using the public testnet's locked accounts via MetaMask, the test web3js and MetaMask integration 
 
+# Play the Games!
+
+## Play Lotto
+
+Our first game is a lottery, and we would like everyone to buy some tickets.  Please clone our player repository as:  
+
+> git clone https://github.com/BaldHeads/play_bChain_lotto
+
+and read the instructions in the how_to_play.md file.   You will need to paste in the contract address of the current lotto game when instructed as the following:  
+
+> 0x7c37ff45f8Df929bc6619324EF4077CDFC0a7368
+
+Please buy some tickets and we will find out if there are any winners during class on Thursday
+
+## Play Blackjack
+
+You can play live blackjack using the following link. You have to paste in your private key in order to play.  Once a hand is complete, you need to refresh the page, or click on the reload button at the bottom of the game to play again.  You will have to paste in the private key every time you play.
+
+http://hardymachine.com.nightshade.arvixe.com/
+
+You can use one of the following private keys  
+> 0xb00c8b09d6ffb158a9adcb882e64fc128b74a662f895cc98a9331d24bbf06165
+> 0x509f571eff15c1867205f23e980f6febc1c6e85f7dfaffddb24da269c4cc9281
+> 0xb55cc89c487411d2636bd81db2a619f07e5d1e61b7091ca2593337ca75799be2
+> 0x847b1a78fdbe3c0f9f6bd24ae516a3106002fcca596220a44b6b07d02f3af6c3
+
 # Setting Up a Public Ganache Testnet
 
 Ultimately, we want the entire class to be able to buy tickets in the same lottery. Therefore, we cannot be limited to a local Ganache testnet on our individual developer machines. So we need to setup a public server that we all can get access to.
@@ -66,11 +92,11 @@ These private keys were provided to our classmates and instructors for use.
 
 [BlockLottoGame.sol](jordan/BlockLottoGame.sol) is the solidity contract that represents a single lottery. The contract must be re-deployed each time a new lottery is played.
 
-afda;fja;fja;f
+{insert some text here}
 
 In order to find winning tickets and pay out the winners, we need to create a mapping between tickets and buyer addresses. The initial idea was to create a `mapping(address payable => uint[6])` ; however, that created a real problem because we have to loop through the entire mapping and match each ticket against the winning numbers, which could easily exceed gas limits if we sell millions of tickets in the lottery.  Instead, we created a mapping of ticket => buyer, so that the winning ticket is the key to the map.  Unfortunately, Solidity does not allow an array or a struct to be a mapping key, so we had to encode the winning ticket into a uint64.  This allows for a `mapping(uint64 => address payable)` and returns all addresses that purchased tickets that match the winning numbers. The function `encodeTicket` will accept 6 uint8's as the input and return a `uint64` where each number is byte shifted to allow it to be packed into the `uint64`, which is then used as a key to the mapping.
 
-al;kdfjak;fa;kjfa
+{insert some text here}
 
 
 # Lotto Python User Interface
@@ -112,3 +138,38 @@ The following view functions are available as well:
 * `isStarted` - true if player has ante'd up, false otherwise
 
 # BlackJack Web User Interface
+
+There are 3 implementations of the web user interface in order to progressively learn more about web3js.  
+
+1. In the `ankur/testjs` folder, this version only works with a local ganache testnet on http://127.0.0.1:8545 and only works with unlocked accounts, i.e. there are no private keys involved to sign transactions. This means we can directly `deploy` contracts, and either `call` or `send` contract methods.
+2. In the `ankur/js_signed_web3` folder,  all transactions must be signed with a private key. This means a transaction object must be prepared for non-view contract actions, then signed, and then sent via `sendSignedTransaction`. This seems like the process you would use if you are writing scripts in node.js.
+3. Finally, in the ankur/js_metamask folder, the player contract functions can either `call` or `send` contract methods again, and MetaMask will handle signing and forwarding the calls to the contract.  Web3js seems to be easiest to use when using MetaMask, and this would be the process you would use when writing web content.  Quick Note - since MetaMask injects it's own Web3 instance, we have to use a separate web3 object for the dealer's contract calls so they don't go through MetaMask.
+
+Each implementation has 4 files:  
+
+1. index.html - the HTML file that defines the UI
+2. main.js - the file that holds all the scripting
+3. blackjack_abi.js - the contract JSON abi provided by remix
+4. blackjack_bytecode.js - the bytecode JSON object provided by remix
+
+## Basic Walkthrough
+
+When you first load http://hardymachine.com.nightshade.arvixe.com/ , you'll need to paste in a private key and press the `Calculate Address` button
+
+![start](screenshots/blackjack_start.png)
+
+You will then need to enter a bet amount and click `Ante nUp`
+
+![ante](screenshots/blackjack_ante.jpg)
+
+After the ante, you can see the cards are dealt, the hand is described, and the `hit`, `stand`, and `double` buttons are now available.
+
+![after ante](screenshots/blackjack_after_ante.jpg)
+
+We are now showing a 10, so we might as well hit:
+
+![after hit](screenshots/blackjack_after_hit.jpg)
+
+We were dealt a 10 of Hearts. With a total of 20, we can stand and end the game.  The dealer has automatically dealt out his cards and is showing 18, so we win!. Note that our balance has change with a 0.1 ETH win minus some gas fees.
+
+![after stand](screenshots/blackjack_after_stand.jpg)
