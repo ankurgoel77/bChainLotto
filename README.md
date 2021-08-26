@@ -92,15 +92,44 @@ These private keys were provided to our classmates and instructors for use.
 
 [BlockLottoGame.sol](jordan/BlockLottoGame.sol) is the solidity contract that represents a single lottery. The contract must be re-deployed each time a new lottery is played.
 
-{insert some text here}
+Since this lottery has a charity component, a payable `beneficiary` is important in the definition variables and within the constructor function for reuse. Other base components include the contract `starter` and the `maxBallNum`. `isOpen` is the assertion that the lottery is currently in play and is default set to true upon initiating a contract. `openStatus` and `requireStarter` modifiers are added for functions to eliminate rewriting the respective require statements. This will help developers modify the existing contract to incorporate additional features if desired. 
+
+Main Functions 
+
+* `buyTicket` allows players to buy a ticket with 6 chosen numbers from 1 - `maxBallNum` for 1 ETH
+* `generateWinningNumbers` generates 6 random unique numbers as the winning ticket
+*  `finalize` closes the lottery, calls `generateWinningNumbers`, and uses the winning numbers to encode a `winningTicket`. We added a `fakeFinalize` function for testing the actual payout in the case of winning tickets.
 
 In order to find winning tickets and pay out the winners, we need to create a mapping between tickets and buyer addresses. The initial idea was to create a `mapping(address payable => uint[6])` ; however, that created a real problem because we have to loop through the entire mapping and match each ticket against the winning numbers, which could easily exceed gas limits if we sell millions of tickets in the lottery.  Instead, we created a mapping of ticket => buyer, so that the winning ticket is the key to the map.  Unfortunately, Solidity does not allow an array or a struct to be a mapping key, so we had to encode the winning ticket into a uint64.  This allows for a `mapping(uint64 => address payable)` and returns all addresses that purchased tickets that match the winning numbers. The function `encodeTicket` will accept 6 uint8's as the input and return a `uint64` where each number is byte shifted to allow it to be packed into the `uint64`, which is then used as a key to the mapping.
 
-{insert some text here}
+View Functions
+
+* `isOpen` default to true, representing the lotto status as playable when true, and finished/closed when false
+* `lottoPot` shows the current value of the lotto pot, this should be 0 when the lotto is closed.
 
 
 # Lotto Python User Interface
 
+[Creator Interface](jordan/cli_creator.py) 
+
+
+[Player Interface](jordan/cli_player.py)
+
+<details>
+<summary>Two UI's: one for contract creator and one for lotto players</summary>
+<br>
+Creator file uses abi.json and bytecode.json
+
+Player file only uses abi.json
+
+The creator can start a contract with a private key for each the starter and the beneficiary. They will then receive a contract address to share with players. They can finalize, show the lotto pot, and get a list of existing tickets. 
+
+The player will need to put in their private key and the contract address to interact. They will then have the ability to buy tickets picking their own numbers or having them randomly chosen. These numbers are picked using python's random library and both picked and random tickets are sorted within the buy function of the interface. 
+</details>
+<br>
+
+Explanations on how to play can be found [here](jordan/how_to_play.md)
+<br>
 # Lotto Number Analysis
 
 # BlackJack Smart Contract

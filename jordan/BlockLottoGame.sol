@@ -30,6 +30,11 @@ contract BlockLottoGame{
         _;
     }
     
+    modifier requireStarter {
+        require (msg.sender == starter, "Only the starter can close the lottery");
+        _;
+    }
+    
     function encodeTicket(uint8 num1, uint8 num2, uint8 num3, uint8 num4, uint8 num5, uint8 num6) internal pure returns (uint64) {
         return (uint64(num1) << 0) + (uint64(num2) << 8) + (uint64(num3) << 16) + (uint64(num4) << 24) + (uint64(num5) << 32) + (uint64(num6) << 40);
     }
@@ -114,9 +119,32 @@ contract BlockLottoGame{
         return (numbers[0], numbers[1], numbers[2], numbers[3], numbers[4], numbers[5]);
     }
     
-    function finalize() public openStatus{
+    function fakeFinalize() public openStatus requireStarter {
+        // use pre-determined winning numbers to test payout
+        // 10,20,30,40,50,60
+        
+        uint winningAmount = 0;
+        
+        emit winningNumbers(10,20,30,40,50,60);
+        winningTicket = encodeTicket(10,20,30,40,50,60);
+        address payable[] memory winners = tickets[winningTicket];
+        
+        if (winners.length > 0) {
+            winningAmount = uint(lottoPot * 4 / 5 / winners.length);
+        }
+        
+        for (uint i = 0; i < winners.length; i++) {
+            winners[i].transfer(winningAmount);
+            emit winningBuyer(winners[i], winningAmount);
+        }
+        
+        lottoPot -= (winningAmount * winners.length); // takes care of remainders
+        beneficiary.transfer(lottoPot);
+        
+    }
+    
+    function finalize() public openStatus requireStarter {
         // pick winning nums, find winning tickets, divide .8 pot among winners
-        require (msg.sender == starter, "Only the starter can close the lottery");
         uint8 num1;
         uint8 num2;
         uint8 num3;
@@ -161,6 +189,5 @@ contract BlockLottoGame{
                 uint8((winningTicket & 280375465082880) >> 40) 
                 );
     }
-    
     
 }
