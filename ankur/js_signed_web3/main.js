@@ -433,6 +433,7 @@ const results = document.querySelector('#results');
 const btn_playAgain = document.querySelector("#btn_playAgain");
 
 const provider = new Web3.providers.HttpProvider('http://127.0.0.1:8545');
+// alternately, use Web3.providers.HttpProvider('http://45.33.17.146:8545') for public testnet
 const web3 = new Web3(provider);
 
 

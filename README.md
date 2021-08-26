@@ -24,7 +24,7 @@ Group responsibilities were as follows:
     * [blackjack_1player.sol](ankur/blackjack_1player.sol) is a Solidity Contract implementing a single player BlackJack game against a dealer
 * Implement Web UI for BlackJack - Ankur  
     * [index.html](ankur/jstest/index.html) and [main.js](ankur/jstest/main.js) are a web UI using local, unlocked Ganache accounts
-    * [index.html](ankur/js_signed_web3/index.html) and [main.js](ankur/js_signed_web3/main.js) are a web UI using the public testnet's accounts that are locked, to test web3js's ability to sign transactions  
+    * [index.html](ankur/js_signed_web3/index.html) and [main.js](ankur/js_signed_web3/main.js) are a web UI using either a local Ganache or a public testnet's accounts that are locked, to test web3js's ability to sign transactions  
     * [index.html](ankur/js_metamask/index.html) and [main.js](ankur/js_metamask/main.js) are a web UI using the public testnet's locked accounts via MetaMask, the test web3js and MetaMask integration 
 
 # Play the Games!
@@ -94,19 +94,26 @@ These private keys were provided to our classmates and instructors for use.
 
 Since this lottery has a charity component, a payable `beneficiary` is important in the definition variables and within the constructor function for reuse. Other base components include the contract `starter` and the `maxBallNum`. `isOpen` is the assertion that the lottery is currently in play and is default set to true upon initiating a contract. `openStatus` and `requireStarter` modifiers are added for functions to eliminate rewriting the respective require statements. This will help developers modify the existing contract to incorporate additional features if desired. 
 
-Main Functions 
+### Main Functions 
 
 * `buyTicket` allows players to buy a ticket with 6 chosen numbers from 1 - `maxBallNum` for 1 ETH
 * `generateWinningNumbers` generates 6 random unique numbers as the winning ticket
 *  `finalize` closes the lottery, calls `generateWinningNumbers`, and uses the winning numbers to encode a `winningTicket`. We added a `fakeFinalize` function for testing the actual payout in the case of winning tickets.
 
-In order to find winning tickets and pay out the winners, we need to create a mapping between tickets and buyer addresses. The initial idea was to create a `mapping(address payable => uint[6])` ; however, that created a real problem because we have to loop through the entire mapping and match each ticket against the winning numbers, which could easily exceed gas limits if we sell millions of tickets in the lottery.  Instead, we created a mapping of ticket => buyer, so that the winning ticket is the key to the map.  Unfortunately, Solidity does not allow an array or a struct to be a mapping key, so we had to encode the winning ticket into a uint64.  This allows for a `mapping(uint64 => address payable)` and returns all addresses that purchased tickets that match the winning numbers. The function `encodeTicket` will accept 6 uint8's as the input and return a `uint64` where each number is byte shifted to allow it to be packed into the `uint64`, which is then used as a key to the mapping.
-
-View Functions
+### View Functions
 
 * `isOpen` default to true, representing the lotto status as playable when true, and finished/closed when false
 * `lottoPot` shows the current value of the lotto pot, this should be 0 when the lotto is closed.
 
+### Storing Lottery Tickets
+
+In order to find winning tickets and pay out the winners, we need to create a mapping between tickets and buyer addresses. The initial idea was to create a `mapping(address payable => uint[6])` ; however, that created a real problem because we have to loop through the entire mapping and match each ticket against the winning numbers, which could easily exceed gas limits if we sell millions of tickets in the lottery.  Instead, we created a mapping of ticket => buyer, so that the winning ticket is the key to the map.  Unfortunately, Solidity does not allow an array or a struct to be a mapping key, so we had to encode the winning ticket into a uint64.  This allows for a `mapping(uint64 => address payable)` and returns all addresses that purchased tickets that match the winning numbers. The function `encodeTicket` will accept 6 uint8's as the input and return a `uint64` where each number is byte shifted to allow it to be packed into the `uint64`, which is then used as a key to the mapping.
+
+### Sorting Numbers
+
+In order to compare the combination of 6 numbers on the winning ticket to any other ticket, the numbers must be sorted. The contract will sort the winning numbers using a bubble sort.  Even though bubble sort has algorithmic runtime of 0(n²), the mere fact that we are only sorting 6 numbers means the overall cost is much lower than more complicated sorts such as quicksort.
+
+Note - it is the client's responsibility (either the client UI or the ticket buyer directly) to call buyTickets with pre-sorted numbers in order to save on gas fees.
 
 # Lotto Python User Interface
 
