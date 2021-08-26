@@ -42,14 +42,20 @@ def buyTicket(six_numbers):
     """
     Input 6 numbers separated by spaces, can alternatively call the pick6 function here
     """
-    tx_hash = contract.functions.buyTicket(
+    tx = contract.functions.buyTicket(
         six_numbers[0],
         six_numbers[1],
         six_numbers[2],
         six_numbers[3],
         six_numbers[4], 
-        six_numbers[5]).transact({"value": web3.toWei(1, "ether")})
-    
+        six_numbers[5]).buildTransaction({
+            "chainId": 5337, 
+            "value" : web3.toWei(1, "ether"),
+            "nonce": web3.eth.getTransactionCount(user_account),
+        })
+        
+    signed_tx = web3.eth.account.sign_transaction(tx, private_key=pvtkey)
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
     tx_receipt = web3.eth.waitForTransactionReceipt(tx_hash)
 
 def main():
