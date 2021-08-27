@@ -137,7 +137,17 @@ The player will need to put in their private key and the contract address to int
 
 Explanations on how to play can be found [here](jordan/how_to_play.md)
 <br>
+
 # Lotto Number Analysis
+
+A count function will be ran on 1000 samples and the first 6 and last 6 numbers will be used.
+
+* 6 most frequent numbers : [10, 18, 21, 22, 24, 39]
+* 6 least frequent numbers : [7, 12, 19, 30, 41, 59]
+* prediction1 = [7,11,21,35,42,60]
+* prediction2 = [10,19,21,28,43,56]
+* prediction3 = [2,9,20,34,41,44]
+* prediction4 = [1,17,33,35,46,52]
 
 # BlackJack Smart Contract
 
