@@ -10,6 +10,7 @@ Blockchain technology could be a way of solving many of these issues. Blockchain
 This project will examine 2 different "Games of Chance" to see how we can implement smart contracts on the Ethereum network, and show how to provide open and public gambling games.
 
 Group responsibilities were as follows:  
+* Presentation - [PDF Version](presentation.pdf)
 * Setting up a public Ganache Testnet - Ankur  
     * [bip39_addresses.csv](ankur/bip39_addresses.csv) is a csv of 2000 HD-Wallet addresses and keys
     * [init_bchain.py](ankur/init_bchain.py) is a python script to seed 2000 addresses
